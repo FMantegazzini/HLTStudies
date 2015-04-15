@@ -1,7 +1,7 @@
 /*
 Macro to draw occupancy plots.
-This macro read outputTotal.root, that is the union of the .root files created by the analyzer.
- */
+This macro read outputTotal.root, i.e. the union of the .root files created by the analyzer.
+*/
 
 #include <iostream>
 #include <stdio>
@@ -115,33 +115,44 @@ void scale () {
   c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_eb" + eb_thr + "_ee" + ee_thr + ".png").c_str(),"png");
   c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_eb" + eb_thr + "_ee" + ee_thr + ".pdf").c_str(),"pdf");
 
+  //computation of mean hits per event
+
   Double_t EB_mean = 0.;
   Double_t EEM_mean= 0.;
   Double_t EEP_mean = 0.;
 
-  for (int i=1; i<=360; i++) {
-    for (int j=1; j<=170; j++) {
-      EB_mean = EB_mean + h_EB->GetBinContent(i,j);
+  int EB_channels = 0;
+  for (int i=1; i <= h_EB->GetNbinsX(); i++) {
+    for (int j=1; j <= h_EB->GetNbinsY(); j++) {
+      if (h_EB->GetBinContent(h_EB->FindBin(i,j)) > 0) {
+	EB_channels = EB_channels + 1;
+	EB_mean = EB_mean + h_EB->GetBinContent(h_EB->FindBin(i,j));
+      }
     }
   }
+  EB_mean = EB_mean/EB_channels;
 
-  EB_mean = EB_mean/(360*170);
-
-  for (int i=1; i<=100; i++) {
-    for (int j=1; j<=100; j++) {
-      EEM_mean = EEM_mean + h_EEM->GetBinContent(i,j);
+ int EEM_channels = 0;
+  for (int i=1; i <= h_EEM->GetNbinsX(); i++) {
+    for (int j=1; j <= h_EEM->GetNbinsY(); j++) {
+      if (h_EEM->GetBinContent(h_EEM->FindBin(i,j)) > 0) {
+	EEM_channels = EEM_channels + 1;
+	EEM_mean = EEM_mean + h_EEM->GetBinContent(h_EEM->FindBin(i,j));
+      }
     }
   }
+  EEM_mean = EEM_mean/EEM_channels;
 
-  EEM_mean = EEM_mean/(100*100);
-
-  for (int i=1; i<=100; i++) {
-    for (int j=1; j<=100; j++) {
-      EEP_mean = EEP_mean + h_EEP->GetBinContent(i,j);
+ int EEP_channels = 0;
+  for (int i=1; i <= h_EEP->GetNbinsX(); i++) {
+    for (int j=1; j <= h_EEP->GetNbinsY(); j++) {
+      if (h_EEP->GetBinContent(h_EEP->FindBin(i,j)) > 0) {
+	EEP_channels = EEP_channels + 1;
+	EEP_mean = EEP_mean + h_EEP->GetBinContent(h_EEP->FindBin(i,j));
+      }
     }
   }
-
-  EEP_mean = EEP_mean/(100*100);
+  EEP_mean = EEP_mean/EEP_channels;
 
   cout << "EB mean hit occupancy = " << EB_mean << endl;
   cout << "EEM mean hit occupancy = " << EEM_mean << endl;
