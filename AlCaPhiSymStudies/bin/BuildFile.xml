@@ -1,6 +1,6 @@
 <use name="root"/>
 <use name="rootgraphics"/>
-<use name="HLTStudies/AlCaPhiSymStudies/">
+<use name="HLTStudies/AlCaPhiSymStudies"/>
 <use name="FWCore/FWLite"/>
 <use name="FWCore/ParameterSet"/>
 <use name="FWCore/PythonParameterSet"/>
@@ -13,6 +13,6 @@
 <environment>
   <bin
       name="MakeAlCaPhiSymOccupancyPlot"
-      file="MakeAlCaPhiSymOccupancyPlot.cc">
+      file="MakeAlCaPhiSymOccupancyPlot.cpp">
   </bin>
 </environment>
