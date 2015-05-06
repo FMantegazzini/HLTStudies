@@ -26,7 +26,8 @@
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 
 #include "PhysicsTools/Utilities/macros/setTDRStyle.C"
-#include "../interface/TEndcapRings.h"
+#include "HLTStudies/AlCaPhiSymStudies/interface/TEndcapRings.h"
+//#include "../interface/TEndcapRings.h"
 //#include "TEndcapRings.h"
 
 using namespace std;

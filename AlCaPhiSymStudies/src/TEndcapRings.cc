@@ -1,4 +1,4 @@
-#include "../interface/TEndcapRings.h"
+#include "HLTStudies/AlCaPhiSymStudies/interface/TEndcapRings.h"
 
 
 
