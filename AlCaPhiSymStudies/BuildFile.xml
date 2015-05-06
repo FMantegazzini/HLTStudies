@@ -1,5 +1,14 @@
 <use name="root"/>
 <use name="rootgraphics"/>
+<use name="FWCore/FWLite"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/PythonParameterSet"/>
+<use name="DataFormats/FWLite"/>
+<use name="PhysicsTools/FWLite"/>
+<use name="DataFormats/EcalDetId"/>
+<use name="DataFormats/EcalDigi"/>
+<use name="DataFormats/EcalRecHit"/>
+<flags CXXFLAGS="-g -Wall -fpermissive -std=c++0x -Wno-reorder"/>
 <export>
-  <lib   name="1"/>
+<lib name="1"/>
 </export>

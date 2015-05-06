@@ -26,11 +26,10 @@
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 
 #include "PhysicsTools/Utilities/macros/setTDRStyle.C"
+#include "../interface/TEndcapRings.h"
+//#include "TEndcapRings.h"
 
 using namespace std;
-
-//function to get eta from iRing (i.e. ieta)
-float TEndcapRings::GetEtaFromIRing(const int& iRing);
 
 //**********MAIN**************************************************************************
 int main( int argc, char *argv[] )
@@ -79,9 +78,11 @@ int main( int argc, char *argv[] )
 
         //---FWLite interfaces---
         fwlite::Event event(inFile);
-	fwlite::Handle<EcalRecHitCollection> ebRechitHandle;
-	fwlite::Handle<EcalRecHitCollection> eeRechitHandle;
+	fwlite::Handle<EcalRecHitCollection> ebRecHitsHandle;
+	fwlite::Handle<EcalRecHitCollection> eeRecHitsHandle;
 
+	TEndcapRings *eRings = new TEndcapRings(); 
+       
         //---events loop---
         for(event.toBegin(); !event.atEnd(); ++event) {
 	  iEvent++;
@@ -96,7 +97,7 @@ int main( int argc, char *argv[] )
 	      EBDetId id_crystal(itb->id());
 	      
 	      float ieta = id_crystal.ieta();
-	      float eta = GetEtaFromIRing (ieta);
+	      float eta = eRings->GetEtaFromIRing (ieta);
 	      
 	      float e  = itb->energy();
 	      float et = itb->energy()/cosh(eta);
@@ -118,21 +119,21 @@ int main( int argc, char *argv[] )
 	    {
 	      EEDetId id_crystal(ite->id());
 	      
-	      float ieta = id_crystal.ieta();
-	      float eta = GetEtaFromIRing (ieta);
+	      float iring = eRings->GetEndcapRing( id_crystal.ix(), id_crystal.iy(), id_crystal.zside() );
+	      float eta = eRings->GetEtaFromIRing (iring);
 	      
 	      float e  = ite->energy();
 	      float et = ite->energy()/cosh(eta);
 	      
 	      if (id_crystal.zside() > 0) { //EEP
-		float eepCut_GeV = eeCut_ADC*(72.92+(3.549)*ieta + (0.2262)*ieta*ieta)*1.15/1000.;
+		float eepCut_GeV = eeCut_ADC*(72.92+(3.549)*iring + (0.2262)*iring*iring)*1.15/1000.;
 		float et_thr = eepCut_GeV/cosh(eta) + 1.;
 		if (e > eepCut_GeV && et < et_thr)
 		  h2_hitOccupancy_EEP->Fill(id_crystal.ix(),id_crystal.iy());
 	      }
 	      
 	      if (id_crystal.zside() < 0) { //EEM
-		float eemCut_GeV = eeCut_GeV*(79.29+(4.148)*ieta + (0.2442)*ieta*ieta)*1.15/1000.;
+		float eemCut_GeV = eeCut_ADC*(79.29+(4.148)*iring + (0.2442)*iring*iring)*1.15/1000.;
 		float et_thr = eemCut_GeV/cosh(eta) + 1.;
 		if (e > eemCut_GeV && et < et_thr)
 		  h2_hitOccupancy_EEM->Fill(id_crystal.ix(),id_crystal.iy());
@@ -158,16 +159,3 @@ int main( int argc, char *argv[] )
     outFile->Close();
 
 } //main
-
-float GetEtaFromIRing(const int& iRing)
-{
-  if( (iRing >= 1) && (iRing <= 85) )
-    return ( 0.0174*(iRing-0.5) );
-  if( (iRing >= -85) && (iRing <= -1) )
-    return ( 0.0174*(iRing+0.5) );
-  if( iRing >= 86 )
-    return ( 1.47135 + 0.0281398*(iRing-86) - 0.00059926*pow(iRing-86,2) + 2.23632e-05*pow(iRing-86,3) );
-  if( iRing <= -86 )
-    return -1 * ( 1.47135 + 0.0281398*(fabs(iRing)-86) - 0.00059926*pow(fabs(iRing)-86,2) + 2.23632e-05*pow(fabs(iRing)-86,3) );
-  return -1.;
-}

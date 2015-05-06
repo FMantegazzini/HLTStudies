@@ -1,4 +1,5 @@
 <use name="root"/>
+<use name="rootcore"/>
 <use name="rootgraphics"/>
 <use name="FWCore/FWLite"/>
 <use name="FWCore/ParameterSet"/>
@@ -8,14 +9,8 @@
 <use name="DataFormats/EcalDetId"/>
 <use name="DataFormats/EcalDigi"/>
 <use name="DataFormats/EcalRecHit"/>
-<flags EDM_PLUGIN="1"/>
-<environment>
-  <bin
-      name="MakeAlCaPhiSymOccupancyPlot"
-      file="MakeAlCaPhiSymOccupancyPlot.cc">
-  </bin>
-  <bin
-      name="MakeAlCaPhiSymOccupancyPlot_2012D"
-      file="MakeAlCaPhiSymOccupancyPlot_2012D.cc">
-  </bin>
-</environment>
+<flags CXXFLAGS="-g -Wall -fpermissive -std=c++0x -Wno-reorder"/>
+<export>
+<lib name="1"/>
+</export>
+<bin file="MakeAlCaPhiSymOccupancyPlot.cpp" name="MakeAlCaPhiSymOccupancyPlot"></bin>

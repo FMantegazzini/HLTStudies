@@ -22,6 +22,7 @@ void EvSizePlots () {
 
   g1->SetPoint(0,20,9.7);
   g1->SetPoint(1,40,16.1);
+  g1->SetPoint(2,0,3.3);
   
   g1 -> SetTitle("bx50ns_EB_3_EE_5");
   g1 -> GetXaxis() -> SetLabelSize(0.04);
@@ -29,8 +30,11 @@ void EvSizePlots () {
   g1 -> GetXaxis() -> SetTitleSize(0.05);
   g1 -> GetYaxis() -> SetTitleSize(0.05);
   g1 -> GetYaxis() -> SetTitleOffset(1.);
-  g1 -> GetYaxis() -> SetRangeUser(4.,30.);
-  g1 -> GetXaxis() -> SetRangeUser(-1.,50.);
+
+  //g1 -> GetYaxis() -> SetRangeUser(5.,30.);
+  //g1 -> GetXaxis() -> SetRangeUser(0.,50.);
+  g1 -> GetXaxis() -> SetLimits(0.,50.);
+  g1 -> GetYaxis() -> SetLimits(0.,20.);
  
   g1 -> GetXaxis() -> SetTitle("PU");
   g1 -> GetYaxis() -> SetTitle("Event Size(kB)");
@@ -41,10 +45,12 @@ void EvSizePlots () {
   g1 -> SetLineColor(kBlack);
   g1 -> SetLineWidth(1.8);
 
-  gStyle->SetOptFit(1111);
+  //gStyle->SetOptFit(1111);
   
-  TF1 *f = new TF1("linear", "[0]+[1]*x", -1, 50);
-  g1 -> Fit("linear","","", -1, 50);
+  TF1 *f = new TF1("linear", "[0]+[1]*x", 0, 50);
+  f->SetParName(0,"q");
+  f->SetParName(1,"m");
+  g1 -> Fit("linear","","",0, 50);
 
   TCanvas* c1 = new TCanvas("c1","c1");
   c1 -> cd();

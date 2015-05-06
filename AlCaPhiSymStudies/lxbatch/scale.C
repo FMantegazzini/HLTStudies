@@ -1,6 +1,6 @@
 /*
 Macro to draw occupancy plots.
-This macro read outputTotal.root, i.e. the union of the .root files created by the analyzer.
+This macro read outputTotal.root, that is the union of the .root files created by the analyzer.
 */
 
 #include <iostream>
@@ -33,7 +33,7 @@ void scale () {
   h_EEM->Scale(1./num_events);
   h_EEP->Scale(1./num_events);
   cout << "Scaling for " << 1./num_events << endl;
-
+  /*
   std::string PU;
   std::string bx;
   std::string eb_thr;
@@ -114,7 +114,7 @@ void scale () {
   h_EEP -> Draw("colz");
   c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_eb" + eb_thr + "_ee" + ee_thr + ".png").c_str(),"png");
   c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_eb" + eb_thr + "_ee" + ee_thr + ".pdf").c_str(),"pdf");
-
+  */
   //computation of mean hits per event
 
   Double_t EB_mean = 0.;
