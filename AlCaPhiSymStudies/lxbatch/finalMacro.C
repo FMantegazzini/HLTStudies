@@ -17,7 +17,7 @@ This macro read outputTotal.root, that is the union of the .root files created b
 #include "TStyle.h"
 #include "TCanvas.h"
 
-void scale () {
+void finalMacro () {
 
   TFile* f = new TFile("file:outputOccupancy_total.root"); 
   
