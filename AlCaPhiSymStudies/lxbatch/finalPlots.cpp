@@ -173,9 +173,9 @@ int main (int argc, char** argv) {
     Double_t EB_mean = 0.;
     Double_t EEM_mean= 0.;
     Double_t EEP_mean = 0.;
-    Double_t EB_lowerOccupancy = 10.;
-    Double_t EEM_lowerOccupancy = 10.;
-    Double_t EEP_lowerOccupancy = 10.;
+    Double_t EB_lower = 10.;
+    Double_t EEM_lower = 10.;
+    Double_t EEP_lower = 10.;
 
     int EB_channels = 0;
     for (int i=1; i <= h_EB->GetNbinsX(); i++) {
@@ -185,8 +185,8 @@ int main (int argc, char** argv) {
 	  EB_mean = EB_mean + h_EB->GetBinContent(h_EB->FindBin(i,j));
 	}
       
-	if (h_EB->GetBinContent(h_EB->FindBin(i,j)) < EB_lowerOccupancy && h_EB->GetBinContent(h_EB->FindBin(i,j)) != 0) {  //Find lower occupancy
-	  EB_lowerOccupancy = h_EB->GetBinContent(h_EB->FindBin(i,j));
+	if (h_EB->GetBinContent(h_EB->FindBin(i,j)) < EB_lower && h_EB->GetBinContent(h_EB->FindBin(i,j)) != 0) {  //Find lower occupancy
+	  EB_lower = h_EB->GetBinContent(h_EB->FindBin(i,j));
 	}
       }
     }
@@ -199,8 +199,8 @@ int main (int argc, char** argv) {
 	  EEM_channels = EEM_channels + 1;
 	  EEM_mean = EEM_mean + h_EEM->GetBinContent(h_EEM->FindBin(i,j));
 	}
-	if (h_EEM->GetBinContent(h_EEM->FindBin(i,j)) < EEM_lowerOccupancy && h_EEM->GetBinContent(h_EEM->FindBin(i,j)) != 0) //find lower occupancy
-	  EEM_lowerOccupancy = h_EEM->GetBinContent(h_EEM->FindBin(i,j));
+	if (h_EEM->GetBinContent(h_EEM->FindBin(i,j)) < EEM_lower && h_EEM->GetBinContent(h_EEM->FindBin(i,j)) != 0) //find lower occupancy
+	  EEM_lower = h_EEM->GetBinContent(h_EEM->FindBin(i,j));
       }
     }
     EEM_mean = EEM_mean/EEM_channels;
@@ -212,8 +212,8 @@ int main (int argc, char** argv) {
 	  EEP_channels = EEP_channels + 1;
 	  EEP_mean = EEP_mean + h_EEP->GetBinContent(h_EEP->FindBin(i,j));
 	}
-	if (h_EEP->GetBinContent(h_EEP->FindBin(i,j)) < EEP_lowerOccupancy && h_EEP->GetBinContent(h_EEP->FindBin(i,j)) != 0) //find lower occupancy
-	  EEP_lowerOccupancy = h_EEP->GetBinContent(h_EEP->FindBin(i,j));
+	if (h_EEP->GetBinContent(h_EEP->FindBin(i,j)) < EEP_lower && h_EEP->GetBinContent(h_EEP->FindBin(i,j)) != 0) //find lower occupancy
+	  EEP_lower = h_EEP->GetBinContent(h_EEP->FindBin(i,j));
       }
     }
     EEP_mean = EEP_mean/EEP_channels;
@@ -222,9 +222,9 @@ int main (int argc, char** argv) {
     cout << "EEM mean occupancy = " << EEM_mean << endl;
     cout << "EEP mean occupancy = " << EEP_mean << endl;
   
-    cout << "EB lower occupancy = " << EB_lowerOccupancy << endl;
-    cout << "EEM lower occupancy = " << EEM_lowerOccupancy << endl;
-    cout << "EEP lower occupancy = " << EEP_lowerOccupancy << endl;
+    cout << "EB lower occupancy = " << EB_lower  << endl;
+    cout << "EEM lower occupancy = " << EEM_lower << endl;
+    cout << "EEP lower occupancy = " << EEP_lower << endl;
 
     //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
     //  - rate = 1.5 kH
@@ -249,6 +249,7 @@ int main (int argc, char** argv) {
     Double_t occupancyMin = 0.;
     Double_t occupancyMax = 0.01;
     Double_t meanOccupancy = 0.;
+    Double_t lowerOccupancy = 0.;
 
     std::vector<TH1F*> EBM_occupancy_histos;
     std::vector<TH1F*> EBP_occupancy_histos;
@@ -335,32 +336,48 @@ int main (int argc, char** argv) {
     TGraph *EBP_meanOccupancy = new TGraph(); 
     TGraph *EEM_meanOccupancy = new TGraph(); 
     TGraph *EEP_meanOccupancy = new TGraph(); 
+
+    TGraph *EBM_lowerOccupancy = new TGraph();
+    TGraph *EBP_lowerOccupancy = new TGraph(); 
+    TGraph *EEM_lowerOccupancy = new TGraph(); 
+    TGraph *EEP_lowerOccupancy = new TGraph(); 
         
     for(int i = 0; i < EB_rings; i++) { //EB-
       meanOccupancy = EBM_occupancy_histos[i]->GetMean();      
       EBM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
+      lowerOccupancy = (EBM_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      EBM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
     }
 
     for(int i = 0; i < EB_rings; i++) { //EB+
       meanOccupancy = EBP_occupancy_histos[i]->GetMean();      
       EBP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
+      lowerOccupancy = (EBP_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      EBP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE-
       meanOccupancy = EEM_occupancy_histos[i]->GetMean();      
       EEM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
+      lowerOccupancy = (EEM_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      EEM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE+
       meanOccupancy = EEP_occupancy_histos[i]->GetMean();      
       EEP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
+      lowerOccupancy = (EEP_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      EEP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
     }
 
     outputFile->Close();
 
     //draw graphs   
-    drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("occupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
-    drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("occupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
+    drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("meanOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
+    drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("meanOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
+
+drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("lowerOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
+    drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("lowerOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
 
   } //files list
 
