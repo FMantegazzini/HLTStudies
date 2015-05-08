@@ -1,0 +1,12 @@
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU20_25ns_eb6_ee9_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU20_25ns_eb6_ee9_noMultifit_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU20_50ns_eb6_ee9_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU20_50ns_eb6_ee9_noMultifit_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU40_25ns_eb6_ee9_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU40_25ns_eb6_ee9_noMultifit_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU40_50ns_eb6_ee9_output/outputOccupancy_total.root
+/afs/cern.ch/work/f/fedmante/PhiSym_HLTStudies/CMSSW_7_4_0_pre9/src/HLTStudies/AlCaPhiSymStudies/lxbatch/offlineStudies/offline_PU40_50ns_eb6_ee9_noMultifit_output/outputOccupancy_total.root
+
+
+
+
