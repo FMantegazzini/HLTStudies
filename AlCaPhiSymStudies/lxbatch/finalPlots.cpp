@@ -29,10 +29,12 @@ using namespace std;
 #include "TStyle.h"
 #include "TMultiGraph.h"
 #include "TPaveStats.h"
+#include "TLatex.h"
+#include "TLine.h"
 
 #include "TEndcapRings.h"
 
-void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue);
+void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s);
 string uintToString (unsigned int);
 
 int main (int argc, char** argv) {
@@ -270,13 +272,22 @@ int main (int argc, char** argv) {
     }
     EEP_mean = EEP_mean/EEP_channels;
 
+    Double_t EE_mean = (EEM_mean + EEP_mean)/2.;
+    Double_t EE_lower = 0.;
+    if (EEM_lower < EEP_lower)
+      EE_lower = EEM_lower;
+    else if (EEM_lower >= EEP_lower)
+      EE_lower = EEP_lower;
+
     cout << "EB mean occupancy = " << EB_mean << endl;
     cout << "EEM mean occupancy = " << EEM_mean << endl;
     cout << "EEP mean occupancy = " << EEP_mean << endl;
+    cout << "EE mean occupancy = " << EE_mean << endl;
   
     cout << "EB lower occupancy = " << EB_lower  << endl;
     cout << "EEM lower occupancy = " << EEM_lower << endl;
     cout << "EEP lower occupancy = " << EEP_lower << endl;
+    cout << "EE lower occupancy = " << EE_lower << endl;
 
     //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
     //  - rate = 1.5 kH
@@ -429,26 +440,29 @@ int main (int argc, char** argv) {
 
     outputFile->Close();
 
-    //draw graphs   
-    drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("meanOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
-    drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("meanOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
+    //draw graphs
+   
+    drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy, EB_mean, std::string("mean")); 
 
-drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("lowerOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy); 
-    drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("lowerOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy);
+    drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy, EE_mean, std::string("mean"));
+
+    drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lower, std::string("lower")); 
+
+  drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lower, std::string("lower"));
 
   } //files list
 
 } //main
 
 
-void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue) {
+void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s) {
   
   gStyle -> SetOptFit (00111);
   gStyle -> SetOptStat ("");
   gStyle -> SetStatX (.90);
   gStyle -> SetStatY (.90);
   gStyle -> SetStatW (.15);
-     
+  
   g1 -> SetTitle(Title.c_str());
   g1 -> GetXaxis() -> SetLabelSize(0.04);
   g1 -> GetYaxis() -> SetLabelSize(0.04);
@@ -460,7 +474,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   g1 -> GetXaxis() -> SetRangeUser(xmin,xmax);
  
   g1 -> GetXaxis() -> SetTitle("iRing");
-  g1 -> GetYaxis() -> SetTitle("mean occupancy");
+  g1 -> GetYaxis() -> SetTitle((s + " occupancy").c_str());
    
   g1 -> SetMarkerStyle(20);
   g1 -> SetMarkerSize(0.6);
@@ -492,15 +506,35 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   g2 -> Draw("PL");
   legend -> Draw("same");
 
-  TLine *line = new TLine(xmin, lineValue, xmax, lineValue);
-  line->DrawLine(xmin, lineValue, xmax, lineValue);
-  line->SetLineColor(kRed);
-  line->SetLineWidth(2.3);
-  line->Draw("same");
+  TLine *line_1 = new TLine(xmin, lineValue_1, xmax, lineValue_1);
+  line_1->DrawLine(xmin, lineValue_1, xmax, lineValue_1);
+  line_1->SetLineColor(kGreen+2);
+  line_1->SetLineWidth(2);
+  line_1->Draw("same");
+
+  TLine *line_2 = new TLine(xmin, lineValue_2, xmax, lineValue_2);
+  line_2->DrawLine(xmin, lineValue_2, xmax, lineValue_2);
+  line_2->SetLineColor(kRed);
+  line_2->SetLineWidth(2);
+  line_2->Draw("same");
+
+  TLatex *text_1 = new TLatex();
+  text_1->SetNDC();
+  text_1->SetTextColor(kGreen+2);
+  text_1->SetTextSize(0.03);
+  text_1->DrawLatex(0.2,0.82,"#splitline{green line: occupancy value to calibrate in 10 hours}{(statistical precision = 0.1%, rate = 1.5 kH)}");
+  text_1->Draw("same");
   
-  c1 -> Print((Title+".png").c_str(),"png");
-  c1 -> Print((Title+".pdf").c_str(),"pdf");
-    
+  TLatex *text_2 = new TLatex();
+  text_2->SetNDC();
+  text_2->SetTextColor(kRed);
+  text_2->SetTextSize(0.03);
+  text_2->DrawLatex(0.2,0.73,("red line: " + s + " occupancy").c_str());
+  text_2->Draw("same");
+  
+  c1 -> Print((s + "OccupancyVSring_" + Title + ".png").c_str(),"png");
+  c1 -> Print((s + "OccupancyVSring_" + Title + ".pdf").c_str(),"pdf");
+
   delete c1;
 
 }
