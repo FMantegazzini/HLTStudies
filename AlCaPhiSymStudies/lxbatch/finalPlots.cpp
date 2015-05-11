@@ -63,6 +63,7 @@ int main (int argc, char** argv) {
     
     std::cout << std::endl << ">>>> Reading inputFile: " << inputFiles.at(ii) << std::endl;
 
+    /*
     cout << "PU?" << endl;
     cin >> PU;
     cout << "bx?" << endl;
@@ -73,7 +74,58 @@ int main (int argc, char** argv) {
       multifit = "multifit";
     else if (yesno == "no")
       multifit = "no_multifit";
+    */
 
+    //for the default scenarioList.txt use this:
+    if (ii==0) {
+      PU = "20";
+      bx = "25";
+      multifit = "multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==1) {
+      PU = "20";
+      bx = "25";
+      multifit = "no_multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==2) {
+      PU = "20";
+      bx = "50";
+      multifit = "multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==3) {
+      PU = "20";
+      bx = "50";
+      multifit = "no_multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==4) {
+      PU = "40";
+      bx = "25";
+      multifit = "multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==5) {
+      PU = "40";
+      bx = "25";
+      multifit = "no_multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==6) {
+      PU = "40";
+      bx = "50";
+      multifit = "multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    if (ii==7) {
+      PU = "40";
+      bx = "50";
+      multifit = "no_multifit";
+      cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
+    }
+    
     std::string str = uintToString(ii+1);
     TFile *outputFile = new TFile (("occupancy_rings_" + str + ".root").c_str(),"RECREATE");
     //TFile *outputFile = new TFile ("occupancy_rings.root","RECREATE"); 
@@ -245,9 +297,9 @@ int main (int argc, char** argv) {
 
     TEndcapRings *eRings = new TEndcapRings(); 
 
-    Int_t nBins = 1000;   
+    Int_t nBins = 10000;   
     Double_t occupancyMin = 0.;
-    Double_t occupancyMax = 0.01;
+    Double_t occupancyMax = 0.02;
     Double_t meanOccupancy = 0.;
     Double_t lowerOccupancy = 0.;
 
@@ -265,7 +317,7 @@ int main (int argc, char** argv) {
 
     for (int i=0; i<EB_rings; i++) { //EB-
       t << "EBM_occupancy_" << i+1;
-      EBM_occupancy_histos[i]=new TH1F(t.str().c_str(),";mean occupancy",nBins,occupancyMin,occupancyMax); 
+      EBM_occupancy_histos[i]=new TH1F(t.str().c_str(),";occupancy",nBins,occupancyMin,occupancyMax); 
       t.str("");
     }
 
@@ -346,15 +398,15 @@ int main (int argc, char** argv) {
     for(int i = 0; i < EB_rings; i++) { //EB-
       meanOccupancy = EBM_occupancy_histos[i]->GetMean();      
       EBM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EBM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      //cout << "EB- lower occupancy bin " << i << " = " << lowerOccupancy << endl;
+      //cout << "EB- lower occupancy bin " << i << " = " << lowerOccupancy << " ; bin = " << EBM_occupancy_histos[i]->FindFirstBinAbove(0.) << endl;
     }
 
     for(int i = 0; i < EB_rings; i++) { //EB+
       meanOccupancy = EBP_occupancy_histos[i]->GetMean();      
       EBP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EBP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
       //cout << "EB+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
@@ -362,7 +414,7 @@ int main (int argc, char** argv) {
     for(int i = 0; i < EE_rings; i++) { //EE-
       meanOccupancy = EEM_occupancy_histos[i]->GetMean();      
       EEM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EEM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
       //cout << "EE- lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
@@ -370,9 +422,9 @@ int main (int argc, char** argv) {
     for(int i = 0; i < EE_rings; i++) { //EE+
       meanOccupancy = EEP_occupancy_histos[i]->GetMean();      
       EEP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EEP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      cout << "EE+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
+      //cout << "EE+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     outputFile->Close();
@@ -381,8 +433,8 @@ int main (int argc, char** argv) {
     drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("meanOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
     drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("meanOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
 
-drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("lowerOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy); 
-    drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("lowerOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy);
+drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("lowerOccupancyVSring_EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy); 
+    drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("lowerOccupancyVSring_EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy);
 
   } //files list
 
@@ -402,6 +454,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   g1 -> GetYaxis() -> SetLabelSize(0.04);
   g1 -> GetXaxis() -> SetTitleSize(0.05);
   g1 -> GetYaxis() -> SetTitleSize(0.05);
+  g1 -> GetXaxis() -> SetTitleOffset(0.8);
   g1 -> GetYaxis() -> SetTitleOffset(1.2);
   g1 -> GetYaxis() -> SetRangeUser(ymin,ymax);
   g1 -> GetXaxis() -> SetRangeUser(xmin,xmax);
@@ -433,6 +486,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
 
   TCanvas* c1 = new TCanvas("c1","c1");
   c1 -> cd();
+  c1->SetLeftMargin(0.15);
 
   g1 -> Draw("APL");
   g2 -> Draw("PL");
@@ -441,6 +495,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   TLine *line = new TLine(xmin, lineValue, xmax, lineValue);
   line->DrawLine(xmin, lineValue, xmax, lineValue);
   line->SetLineColor(kRed);
+  line->SetLineWidth(2.3);
   line->Draw("same");
   
   c1 -> Print((Title+".png").c_str(),"png");
