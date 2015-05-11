@@ -61,7 +61,7 @@ int main (int argc, char** argv) {
 
   for (unsigned int ii = 0; ii < inputFiles.size(); ii++) { //loop over the files list
     
-    std::cout << "Reading inputFile: " << inputFiles.at(ii) << std::endl;
+    std::cout << std::endl << ">>>> Reading inputFile: " << inputFiles.at(ii) << std::endl;
 
     cout << "PU?" << endl;
     cin >> PU;
@@ -77,7 +77,7 @@ int main (int argc, char** argv) {
     std::string str = uintToString(ii+1);
     TFile *outputFile = new TFile (("occupancy_rings_" + str + ".root").c_str(),"RECREATE");
     //TFile *outputFile = new TFile ("occupancy_rings.root","RECREATE"); 
-    std::cout << "New file created: " << "ESpectra_" << str << ".root" << std::endl; 
+    std::cout << "New file created: " << "occupancy_rings_" << str << ".root" << std::endl; 
 
     TFile* f = new TFile(inputFiles.at(ii).c_str());
   
@@ -238,14 +238,14 @@ int main (int argc, char** argv) {
     Double_t necessary_occupancy = hits/(time_hours * rate * 1000 * 3600);
     cout << "Necessary occupancy to calibrate in 10 hours = " << necessary_occupancy << endl;
   
-    //--- draw graphs mean occupancy vs iRing
+    //--- create and fill histos for with occupancy for every ring
 
     static const int EB_rings = 85;
     static const int EE_rings = 39;
 
     TEndcapRings *eRings = new TEndcapRings(); 
 
-    Int_t nBins = 100;   
+    Int_t nBins = 1000;   
     Double_t occupancyMin = 0.;
     Double_t occupancyMax = 0.01;
     Double_t meanOccupancy = 0.;
@@ -255,7 +255,7 @@ int main (int argc, char** argv) {
     std::vector<TH1F*> EBP_occupancy_histos;
     std::vector<TH1F*> EEM_occupancy_histos;
     std::vector<TH1F*> EEP_occupancy_histos;
-
+    
     EBM_occupancy_histos.resize(EB_rings);
     EBP_occupancy_histos.resize(EB_rings);
     EEM_occupancy_histos.resize(EE_rings);
@@ -271,19 +271,19 @@ int main (int argc, char** argv) {
 
     for (int i=0; i<EB_rings; i++) { //EB+
       t << "EBP_occupancy_" << i+1;
-      EBP_occupancy_histos[i]=new TH1F(t.str().c_str(),";mean occupancy",nBins,occupancyMin,occupancyMax); 
+      EBP_occupancy_histos[i]=new TH1F(t.str().c_str(),";occupancy",nBins,occupancyMin,occupancyMax); 
       t.str("");
     }
 
     for (int i=0; i<EE_rings; i++) { //EE-
       t << "EEM_occupancy_" << i+1;
-      EEM_occupancy_histos[i]=new TH1F(t.str().c_str(),";mean occupancy",nBins,occupancyMin,occupancyMax); 
+      EEM_occupancy_histos[i]=new TH1F(t.str().c_str(),";occupancy",nBins,occupancyMin,occupancyMax); 
       t.str("");
     }
 
     for (int i=0; i<EE_rings; i++) { //EE+
       t << "EEP_occupancy_" << i+1;
-      EEP_occupancy_histos[i]=new TH1F(t.str().c_str(),";mean occupancy",nBins,occupancyMin,occupancyMax); 
+      EEP_occupancy_histos[i]=new TH1F(t.str().c_str(),";occupancy",nBins,occupancyMin,occupancyMax); 
       t.str("");
     }
   
@@ -331,7 +331,8 @@ int main (int argc, char** argv) {
       EEP_occupancy_histos[i]->Write();
     }
 
-    //graphs
+    //graphs for mean and lower occupancy
+
     TGraph *EBM_meanOccupancy = new TGraph();
     TGraph *EBP_meanOccupancy = new TGraph(); 
     TGraph *EEM_meanOccupancy = new TGraph(); 
@@ -345,29 +346,33 @@ int main (int argc, char** argv) {
     for(int i = 0; i < EB_rings; i++) { //EB-
       meanOccupancy = EBM_occupancy_histos[i]->GetMean();      
       EBM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EBM_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
       EBM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      //cout << "EB- lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     for(int i = 0; i < EB_rings; i++) { //EB+
       meanOccupancy = EBP_occupancy_histos[i]->GetMean();      
       EBP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EBP_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
       EBP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      //cout << "EB+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE-
       meanOccupancy = EEM_occupancy_histos[i]->GetMean();      
       EEM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEM_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
       EEM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      //cout << "EE- lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE+
       meanOccupancy = EEP_occupancy_histos[i]->GetMean();      
       EEP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEP_occupancy_histos[i]->FindLastBinAbove()) * (occupancyMax - occupancyMin) / nBins;
+      lowerOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove()) * (occupancyMax - occupancyMin) / nBins;
       EEP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      cout << "EE+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     outputFile->Close();
