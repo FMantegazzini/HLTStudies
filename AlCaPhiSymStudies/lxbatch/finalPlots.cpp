@@ -34,8 +34,13 @@ using namespace std;
 
 #include "TEndcapRings.h"
 
-void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s);
+void drawHistos(TH2F* h2, std::string Title, Double_t zmax, Double_t ymax);
+
+void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s, std::string time);
+
 string uintToString (unsigned int);
+
+string Double_tToString (Double_t);
 
 int main (int argc, char** argv) {
 
@@ -129,100 +134,45 @@ int main (int argc, char** argv) {
     }
     
     std::string str = uintToString(ii+1);
-    TFile *outputFile = new TFile (("occupancy_rings_" + str + ".root").c_str(),"RECREATE");
-    //TFile *outputFile = new TFile ("occupancy_rings.root","RECREATE"); 
+    TFile *outputFile = new TFile (("occupancy_rings_" + str + ".root").c_str(),"RECREATE"); 
     std::cout << "New file created: " << "occupancy_rings_" << str << ".root" << std::endl; 
 
     TFile* f = new TFile(inputFiles.at(ii).c_str());
   
     TH1F* h_events = (TH1F*)f->Get("h_nEvents");
-    TH2F* h_EB = (TH2F*)f->Get("h2_hitOccupancy_EB"); //360 x 170 bins
-    TH2F* h_EEM = (TH2F*)f->Get("h2_hitOccupancy_EEM"); //100 x 100 bins
-    TH2F* h_EEP = (TH2F*)f->Get("h2_hitOccupancy_EEP"); //100 x 100 bins
+    TH2F* h2_EB = (TH2F*)f->Get("h2_hitOccupancy_EB"); //360 x 170 bins
+    TH2F* h2_EEM = (TH2F*)f->Get("h2_hitOccupancy_EEM"); //100 x 100 bins
+    TH2F* h2_EEP = (TH2F*)f->Get("h2_hitOccupancy_EEP"); //100 x 100 bins
 
     Double_t num_events = h_events->GetBinContent(h_events->FindBin(0));
     cout << "Total number of events = " << num_events << endl;
 
-    h_EB->Scale(1./num_events);
-    h_EEM->Scale(1./num_events);
-    h_EEP->Scale(1./num_events);
+    h2_EB->Scale(1./num_events);
+    h2_EEM->Scale(1./num_events);
+    h2_EEP->Scale(1./num_events);
     cout << "Scaling for " << 1./num_events << endl;
     
     
     //--- draw scaled occupancy graphs
-    
-    h_EB -> SetTitle(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str());
-    h_EB -> GetXaxis() -> SetTitle("iphi");
-    h_EB -> GetYaxis() -> SetTitle("ieta");
-    h_EB -> GetZaxis() -> SetTitle("hits/event");
-    
-    h_EB -> GetXaxis() -> SetLabelSize(0.04);
-    h_EB -> GetXaxis() -> SetTitleSize(0.05);
-    h_EB -> GetXaxis() -> SetTitleOffset(0.9);
-    h_EB -> GetYaxis() -> SetLabelSize(0.04);
-    h_EB -> GetYaxis() -> SetTitleSize(0.05);
-    h_EB -> GetYaxis() -> SetTitleOffset(0.9);
-    h_EB -> GetZaxis() -> SetLabelSize(0.04);
-    h_EB -> GetZaxis() -> SetTitleSize(0.05);
-    h_EB -> GetZaxis() -> SetTitleOffset(1.2);
-    h_EB -> GetZaxis() -> SetRangeUser(0,0.001);
-    h_EB -> SetStats(0);
-    
-    h_EEM -> SetTitle(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str());
-    h_EEM -> GetXaxis() -> SetTitle("ix");
-    h_EEM -> GetYaxis() -> SetTitle("iy");
-    h_EEM -> GetZaxis() -> SetTitle("hits/event");
-    
-    h_EEM -> GetXaxis() -> SetLabelSize(0.04);
-    h_EEM -> GetXaxis() -> SetTitleSize(0.05);
-    h_EEM -> GetXaxis() -> SetTitleOffset(0.9);
-    h_EEM -> GetYaxis() -> SetLabelSize(0.04);
-    h_EEM -> GetYaxis() -> SetTitleSize(0.05);
-    h_EEM -> GetYaxis() -> SetTitleOffset(0.9);
-    h_EEM -> GetZaxis() -> SetLabelSize(0.04);
-    h_EEM -> GetZaxis() -> SetTitleSize(0.05);
-    h_EEM -> GetZaxis() -> SetTitleOffset(1.);
-    h_EEM -> GetZaxis() -> SetRangeUser(0,0.0002);
-    h_EEM -> SetStats(0);
+   
+    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.001, 0);
+    drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.0002, 0);
+    drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.0002, 0);
 
-    h_EEP -> SetTitle(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str());
-    h_EEP -> GetXaxis() -> SetTitle("ix");
-    h_EEP -> GetYaxis() -> SetTitle("iy");
-    h_EEP -> GetZaxis() -> SetTitle("hits/event");
-    h_EEP -> GetXaxis() -> SetLabelSize(0.04);
-    h_EEP -> GetXaxis() -> SetTitleSize(0.05);
-    h_EEP -> GetXaxis() -> SetTitleOffset(0.9);
-    h_EEP -> GetYaxis() -> SetLabelSize(0.04);
-    h_EEP -> GetYaxis() -> SetTitleSize(0.05);
-    h_EEP -> GetYaxis() -> SetTitleOffset(0.9);
-    h_EEP -> GetZaxis() -> SetLabelSize(0.04);
-    h_EEP -> GetZaxis() -> SetTitleSize(0.05);
-    h_EEP -> GetZaxis() -> SetTitleOffset(1.);
-    h_EEP -> GetZaxis() -> SetRangeUser(0,0.0002);
-    h_EEP -> SetStats(0);
+    //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
+    //  - rate = 1.5 kHz
+    //  - statistical precision = 0.1%
+    //  - necessary number of hits to reach this precision = 1000
 
-    TCanvas* c1 = new TCanvas("c1","c1");
-    c1->SetRightMargin(0.2);
-    c1 -> cd();
-    h_EB -> Draw("colz");
-    c1 -> Print(("EB_PU" + PU + "_" + bx + "ns_" + multifit + ".png").c_str(), "png");
-    c1 -> Print(("EB_PU" + PU + "_" + bx + "ns_" + multifit + ".pdf").c_str(), "pdf"); 
-  
-    TCanvas* c2 = new TCanvas("c2","c2");
-    c2->SetRightMargin(0.2);
-    c2 -> cd();
-    h_EEM -> Draw("colz");
-    c2 -> Print(("EEM_PU" + PU + "_" + bx + "ns_" + multifit + ".png").c_str(), "png");
-    c2 -> Print(("EEM_PU" + PU + "_" + bx + "ns_" + multifit + ".pdf").c_str(), "pdf"); 
-  
-    TCanvas* c3 = new TCanvas("c3","c3");
-    c3->SetRightMargin(0.2);
-    c3 -> cd();
-    h_EEP -> Draw("colz");
-    c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_" + multifit + ".png").c_str(), "png");
-    c3 -> Print(("EEP_PU" + PU + "_" + bx + "ns_" + multifit + ".pdf").c_str(), "pdf"); 
-  
+    Double_t hits = 1000;
+    Double_t rate = 1.5;
+    Double_t time_hours = 10;
+
+    Double_t necessary_occupancy = hits/(time_hours * rate * 1000 * 3600);
+    cout << "Necessary occupancy to calibrate in 10 hours = " << necessary_occupancy << endl;
+
     //---computation of mean hits per event and of lower occupancy for EB, EEM, EEP
+    //---fill TH2 histos with time to calibrate distributions for every ring
  
     Double_t EB_mean = 0.;
     Double_t EEM_mean= 0.;
@@ -230,44 +180,46 @@ int main (int argc, char** argv) {
     Double_t EB_lower = 10.;
     Double_t EEM_lower = 10.;
     Double_t EEP_lower = 10.;
-
+    
     int EB_channels = 0;
-    for (int i=1; i <= h_EB->GetNbinsX(); i++) {
-      for (int j=1; j <= h_EB->GetNbinsY(); j++) {
-	if (h_EB->GetBinContent(h_EB->FindBin(i,j)) > 0) { //find mean occupancy
+    for (int i=1; i <= h2_EB->GetNbinsX(); i++) {
+      for (int j=1; j <= h2_EB->GetNbinsY(); j++) {
+	if (h2_EB->GetBinContent(h2_EB->FindBin(i,j)) > 0) { //find mean occupancy
 	  EB_channels = EB_channels + 1;
-	  EB_mean = EB_mean + h_EB->GetBinContent(h_EB->FindBin(i,j));
+	  EB_mean = EB_mean + h2_EB->GetBinContent(h2_EB->FindBin(i,j));
 	}
       
-	if (h_EB->GetBinContent(h_EB->FindBin(i,j)) < EB_lower && h_EB->GetBinContent(h_EB->FindBin(i,j)) != 0) {  //Find lower occupancy
-	  EB_lower = h_EB->GetBinContent(h_EB->FindBin(i,j));
+	if (h2_EB->GetBinContent(h2_EB->FindBin(i,j)) < EB_lower && h2_EB->GetBinContent(h2_EB->FindBin(i,j)) != 0) {  //Find lower occupancy
+	  EB_lower = h2_EB->GetBinContent(h2_EB->FindBin(i,j));
 	}
       }
     }
     EB_mean = EB_mean/EB_channels;
 
     int EEM_channels = 0;
-    for (int i=1; i <= h_EEM->GetNbinsX(); i++) {
-      for (int j=1; j <= h_EEM->GetNbinsY(); j++) {
-	if (h_EEM->GetBinContent(h_EEM->FindBin(i,j)) > 0) { //find lower occupancy
+    for (int i=1; i <= h2_EEM->GetNbinsX(); i++) {
+      for (int j=1; j <= h2_EEM->GetNbinsY(); j++) {
+	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) > 0) { //find lower occupancy
 	  EEM_channels = EEM_channels + 1;
-	  EEM_mean = EEM_mean + h_EEM->GetBinContent(h_EEM->FindBin(i,j));
+	  EEM_mean = EEM_mean + h2_EEM->GetBinContent(h2_EEM->FindBin(i,j));
 	}
-	if (h_EEM->GetBinContent(h_EEM->FindBin(i,j)) < EEM_lower && h_EEM->GetBinContent(h_EEM->FindBin(i,j)) != 0) //find lower occupancy
-	  EEM_lower = h_EEM->GetBinContent(h_EEM->FindBin(i,j));
+
+	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) < EEM_lower && h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) != 0) //find lower occupancy
+	  EEM_lower = h2_EEM->GetBinContent(h2_EEM->FindBin(i,j));
       }
     }
     EEM_mean = EEM_mean/EEM_channels;
 
     int EEP_channels = 0;
-    for (int i=1; i <= h_EEP->GetNbinsX(); i++) {
-      for (int j=1; j <= h_EEP->GetNbinsY(); j++) {
-	if (h_EEP->GetBinContent(h_EEP->FindBin(i,j)) > 0) { //find mean occupancy
+    for (int i=1; i <= h2_EEP->GetNbinsX(); i++) {
+      for (int j=1; j <= h2_EEP->GetNbinsY(); j++) {
+	if (h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) > 0) { //find mean occupancy
 	  EEP_channels = EEP_channels + 1;
-	  EEP_mean = EEP_mean + h_EEP->GetBinContent(h_EEP->FindBin(i,j));
+	  EEP_mean = EEP_mean + h2_EEP->GetBinContent(h2_EEP->FindBin(i,j));
 	}
-	if (h_EEP->GetBinContent(h_EEP->FindBin(i,j)) < EEP_lower && h_EEP->GetBinContent(h_EEP->FindBin(i,j)) != 0) //find lower occupancy
-	  EEP_lower = h_EEP->GetBinContent(h_EEP->FindBin(i,j));
+
+	if (h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) < EEP_lower && h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) != 0) //find lower occupancy
+	  EEP_lower = h2_EEP->GetBinContent(h2_EEP->FindBin(i,j));
       }
     }
     EEP_mean = EEP_mean/EEP_channels;
@@ -289,19 +241,22 @@ int main (int argc, char** argv) {
     cout << "EEP lower occupancy = " << EEP_lower << endl;
     cout << "EE lower occupancy = " << EE_lower << endl;
 
-    //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
-    //  - rate = 1.5 kH
+    //--- computation of the necessary time to calibrate with EB(EE)_mean and EB(EE)_lower occupancy assuming;
+    //  - rate = 1.5 kHz
     //  - statistical precision = 0.1%
     //  - necessary number of hits to reach this precision = 1000
 
-    Double_t hits = 1000;
-    Double_t rate = 1.5;
-    Double_t time_hours = 10;
+    Double_t EB_mean_time = hits/(EB_mean * rate * 1000 * 3600);
+    Double_t EE_mean_time = hits/(EE_mean * rate * 1000 * 3600);
+    Double_t EB_lower_time = hits/(EB_lower * rate * 1000 * 3600);
+    Double_t EE_lower_time = hits/(EE_lower * rate * 1000 * 3600);
 
-    Double_t necessary_occupancy = hits/(time_hours * rate * 1000 * 3600);
-    cout << "Necessary occupancy to calibrate in 10 hours = " << necessary_occupancy << endl;
+    cout << "Necessary time to calibrate with EB mean occupancy = " << EB_mean_time << " hours" << endl;
+    cout << "Necessary time to calibrate with EE mean occupancy = " << EE_mean_time << " hours" << endl;
+    cout << "Necessary time to calibrate with EB lower occupancy = " << EB_lower_time << " hours" << endl;
+    cout << "Necessary time to calibrate with EE lower occupancy = " << EE_lower_time << " hours" << endl;
   
-    //--- create and fill histos for with occupancy for every ring
+    //--- create and fill histos with occupancy for every ring
 
     static const int EB_rings = 85;
     static const int EE_rings = 39;
@@ -349,39 +304,61 @@ int main (int argc, char** argv) {
       EEP_occupancy_histos[i]=new TH1F(t.str().c_str(),";occupancy",nBins,occupancyMin,occupancyMax); 
       t.str("");
     }
+
+    //--- create and fill histos for with time to calibrate distributions for every ring
+    
+    TH2F* h2_EB_time = new TH2F("h2_EB_time","h2_EB_time",170,-85,85,100,0.,2.);
+    TH2F* h2_EEM_time = new TH2F("h2_EEM_time","h2_EEM_time",39,1,40,100,0.,40.);
+    TH2F* h2_EEP_time = new TH2F("h2_EEP_time","h2_EEP_time",39,1,40,100,0.,40.);
+
+    Double_t EB_time = 0.;
+    Double_t EEM_time = 0.;
+    Double_t EEP_time = 0.;
   
     //fill histos
     for (int iphi=0; iphi<361; iphi++) { //EB-
       for (int ieta=-85; ieta<0; ieta++) {
-	if ( h_EB->GetBinContent(h_EB->FindBin(iphi,ieta)) != 0 )
-	  EBM_occupancy_histos[ieta+85]->Fill( h_EB->GetBinContent(h_EB->FindBin(iphi,ieta)) ); 
+	if ( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) != 0 ) {
+	  EBM_occupancy_histos[ieta+85]->Fill( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) ); 
+	  EB_time = hits/( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta) ) * rate * 1000 * 3600 );
+	  h2_EB_time->Fill(ieta,EB_time);
+	}
       }
     }
   
     for (int iphi=0; iphi<361; iphi++) { //EB+
       for (int ieta=1; ieta<86; ieta++) {
-	if ( h_EB->GetBinContent(h_EB->FindBin(iphi,ieta)) != 0 )
-	  EBP_occupancy_histos[ieta-1]->Fill( h_EB->GetBinContent(h_EB->FindBin(iphi,ieta)) ); 
+	if ( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) != 0 ) {
+	  EBP_occupancy_histos[ieta-1]->Fill( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) ); 
+	  EB_time = hits/( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta) ) * rate * 1000 * 3600 );
+	  h2_EB_time->Fill(ieta,EB_time);
+	}
       }
     }
 
     for (int ix=1; ix<101; ix++) { //EE-
       for (int iy=1; iy<101; iy++) {
 	int iring = eRings->GetEndcapRing(ix,iy,-1);
-	if ( h_EEM->GetBinContent(h_EEM->FindBin(ix,iy)) != 0 )
-	  EEM_occupancy_histos[iring]->Fill( h_EEM->GetBinContent(h_EEM->FindBin(ix,iy)) ); 
+	if ( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) != 0 ) {
+	  EEM_occupancy_histos[iring]->Fill( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) );
+	  EEM_time = hits/( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) * rate * 1000 * 3600 );
+	  h2_EEM_time->Fill(iring,EEM_time);
+	} 
       }
     }
 
     for (int ix=1; ix<101; ix++) { //EE+
       for (int iy=1; iy<101; iy++) {
 	int iring = eRings->GetEndcapRing(ix,iy,-1);
-	if ( h_EEP->GetBinContent(h_EEP->FindBin(ix,iy)) != 0 )
-	  EEP_occupancy_histos[iring]->Fill( h_EEP->GetBinContent(h_EEP->FindBin(ix,iy)) ); 
+	if ( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) != 0 ) {
+	  EEP_occupancy_histos[iring]->Fill( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) ); 
+	  EEP_time = hits/( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) * rate * 1000 * 3600 );
+	  h2_EEP_time->Fill(iring,EEP_time);
+	}
       }
     }
 
-    //write histo
+    //---write occupancy 2D histos
     outputFile->cd();
 
     for(int i=0;i<EB_rings;i++){
@@ -393,6 +370,21 @@ int main (int argc, char** argv) {
       EEM_occupancy_histos[i]->Write();
       EEP_occupancy_histos[i]->Write();
     }
+
+    //---draw time 2D histos
+
+    if (PU == "20") {
+      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0.8);
+      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+    }
+
+    if (PU == "40") {
+      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),80,0.4);
+      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+    }
+    
 
     //graphs for mean and lower occupancy
 
@@ -408,10 +400,9 @@ int main (int argc, char** argv) {
         
     for(int i = 0; i < EB_rings; i++) { //EB-
       meanOccupancy = EBM_occupancy_histos[i]->GetMean();      
-      EBM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
+      EBM_meanOccupancy->SetPoint(i,85-i,meanOccupancy);
       lowerOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
-      EBM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      //cout << "EB- lower occupancy bin " << i << " = " << lowerOccupancy << " ; bin = " << EBM_occupancy_histos[i]->FindFirstBinAbove(0.) << endl;
+      EBM_lowerOccupancy->SetPoint(i,85-i,lowerOccupancy);
     }
 
     for(int i = 0; i < EB_rings; i++) { //EB+
@@ -419,7 +410,6 @@ int main (int argc, char** argv) {
       EBP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
       lowerOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EBP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      //cout << "EB+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE-
@@ -427,7 +417,6 @@ int main (int argc, char** argv) {
       EEM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
       lowerOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EEM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      //cout << "EE- lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE+
@@ -435,27 +424,70 @@ int main (int argc, char** argv) {
       EEP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
       lowerOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
       EEP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
-      //cout << "EE+ lower occupancy bin " << i << " = " << lowerOccupancy << endl;
     }
 
     outputFile->Close();
 
     //draw graphs
    
-    drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy, EB_mean, std::string("mean")); 
+    if (PU == "20") {
+      drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
 
-    drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.002, necessary_occupancy, EE_mean, std::string("mean"));
+      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
-    drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lower, std::string("lower")); 
+      drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_lower, std::string("lower"), std::string(Double_tToString(EB_lower_time)));
 
-  drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lower, std::string("lower"));
+      drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.00025, necessary_occupancy,EE_lower, std::string("lower"), std::string(Double_tToString(EE_lower_time)));
+    }
+
+    if (PU == "40") {
+      drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
+
+      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
+
+      drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lower, std::string("lower"), std::string(Double_tToString(EB_lower_time)));
+
+      drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lower, std::string("lower"), std::string(Double_tToString(EE_lower_time)));
+    }
 
   } //files list
-
+  
 } //main
 
+void drawHistos(TH2F* h2, std::string Title, Double_t zmax, Double_t ymax){
 
-void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s) {
+  h2 -> SetTitle(Title.c_str());
+  h2 -> GetXaxis() -> SetTitle("iRing");
+  h2 -> GetYaxis() -> SetTitle("time to calibrate (h)");
+  //h2 -> GetZaxis() -> SetTitle("");
+    
+  h2 -> GetXaxis() -> SetLabelSize(0.04);
+  h2 -> GetXaxis() -> SetTitleSize(0.05);
+  h2 -> GetXaxis() -> SetTitleOffset(0.9);
+  h2 -> GetYaxis() -> SetLabelSize(0.04);
+  h2 -> GetYaxis() -> SetTitleSize(0.05);
+  h2 -> GetYaxis() -> SetTitleOffset(0.9);
+  h2 -> GetZaxis() -> SetLabelSize(0.04);
+  h2 -> GetZaxis() -> SetTitleSize(0.05);
+  h2 -> GetZaxis() -> SetTitleOffset(1.2);
+  h2-> SetStats(0);
+
+  if (zmax != 0)
+    h2 -> GetZaxis() -> SetRangeUser(0,zmax);
+
+  if (ymax != 0)
+    h2 -> GetYaxis() -> SetRangeUser(0,ymax);
+
+  TCanvas* c = new TCanvas("c","c");
+  c->SetRightMargin(0.2);
+  c -> cd();
+  h2 -> Draw("colz");
+  c -> Print((Title + ".png").c_str(), "png");
+  c -> Print((Title + ".pdf").c_str(), "pdf"); 
+  delete c;
+}
+
+void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s, std::string time) {
   
   gStyle -> SetOptFit (00111);
   gStyle -> SetOptStat ("");
@@ -474,7 +506,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   g1 -> GetXaxis() -> SetRangeUser(xmin,xmax);
  
   g1 -> GetXaxis() -> SetTitle("iRing");
-  g1 -> GetYaxis() -> SetTitle((s + " occupancy").c_str());
+  g1 -> GetYaxis() -> SetTitle((s + " occupancy (hits/events)").c_str());
    
   g1 -> SetMarkerStyle(20);
   g1 -> SetMarkerSize(0.6);
@@ -521,15 +553,18 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   TLatex *text_1 = new TLatex();
   text_1->SetNDC();
   text_1->SetTextColor(kGreen+2);
-  text_1->SetTextSize(0.03);
-  text_1->DrawLatex(0.2,0.82,"#splitline{green line: occupancy value to calibrate in 10 hours}{(statistical precision = 0.1%, rate = 1.5 kH)}");
+  text_1->SetTextSize(0.034);
+  text_1->DrawLatex(0.22,0.81,"#splitline{green line: occupancy value to calibrate in 10 hours}{(statistical precision = 0.1%, rate = 1.5 kHz)}");
   text_1->Draw("same");
   
   TLatex *text_2 = new TLatex();
   text_2->SetNDC();
   text_2->SetTextColor(kRed);
-  text_2->SetTextSize(0.03);
-  text_2->DrawLatex(0.2,0.73,("red line: " + s + " occupancy").c_str());
+  text_2->SetTextSize(0.034);
+  if (s=="mean")
+    text_2->DrawLatex(0.22,0.71,("#splitline{red line: total mean occupancy}{#Rightarrow time to calibrate = " + time + " h}").c_str());
+  if (s=="lower")
+    text_2->DrawLatex(0.22,0.71,("#splitline{red line: lower occupancy}{#Rightarrow time to calibrate = " + time + " h}").c_str());
   text_2->Draw("same");
   
   c1 -> Print((s + "OccupancyVSring_" + Title + ".png").c_str(),"png");
@@ -545,4 +580,11 @@ string uintToString(unsigned int val) {
   sprintf(buff, "%u", val);
   string str = buff;
   return(str);
+}
+
+// function to convert Double_t into string
+string Double_tToString (Double_t number) {
+  std::ostringstream buff;
+  buff<<number;
+  return buff.str();   
 }
