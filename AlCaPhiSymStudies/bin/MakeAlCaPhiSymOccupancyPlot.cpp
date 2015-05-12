@@ -103,8 +103,10 @@ int main( int argc, char *argv[] )
 	      float e  = itb->energy();
 	      float et = itb->energy()/cosh(eta);
 	      
-	      float ebCut_GeV = ebCut_ADC*0.4*1.15;
+	      float ebCut_GeV = ebCut_ADC*0.04;
 	      float et_thr = ebCut_GeV/cosh(eta) + 1.;
+
+	      //std::cout << "ebCut_GeV = " << ebCut_GeV << std::endl;
 	      
 	      if (e > ebCut_GeV && et < et_thr) {
 		h2_hitOccupancy_EB->Fill(id_crystal.iphi(),id_crystal.ieta()); 
@@ -127,17 +129,19 @@ int main( int argc, char *argv[] )
 	      float et = ite->energy()/cosh(eta);
 	      
 	      if (id_crystal.zside() > 0) { //EEP
-		float eepCut_GeV = eeCut_ADC*(72.92+(3.549)*iring + (0.2262)*iring*iring)*1.15/1000.;
+		float eepCut_GeV = eeCut_ADC*( 72.92+(3.549)*iring + (0.2262)*iring*iring )/1000.;
 		float et_thr = eepCut_GeV/cosh(eta) + 1.;
 		if (e > eepCut_GeV && et < et_thr)
 		  h2_hitOccupancy_EEP->Fill(id_crystal.ix(),id_crystal.iy());
+		//std::cout << "eepCut_GeV = " << eepCut_GeV << std::endl;
 	      }
 	      
 	      if (id_crystal.zside() < 0) { //EEM
-		float eemCut_GeV = eeCut_ADC*(79.29+(4.148)*iring + (0.2442)*iring*iring)*1.15/1000.;
+		float eemCut_GeV = eeCut_ADC*( 79.29+(4.148)*iring + (0.2442)*iring*iring )/1000.;
 		float et_thr = eemCut_GeV/cosh(eta) + 1.;
 		if (e > eemCut_GeV && et < et_thr)
 		  h2_hitOccupancy_EEM->Fill(id_crystal.ix(),id_crystal.iy());
+		//std::cout << "eemCut_GeV = " << eemCut_GeV << std::endl;
 	      }
 	      
 	    }
