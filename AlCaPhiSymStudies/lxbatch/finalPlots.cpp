@@ -29,12 +29,13 @@ using namespace std;
 #include "TStyle.h"
 #include "TMultiGraph.h"
 #include "TPaveStats.h"
+#include "TGaxis.h"
 #include "TLatex.h"
 #include "TLine.h"
 
 #include "TEndcapRings.h"
 
-void drawHistos(TH2F* h2, std::string Title, Double_t zmax, Double_t ymax);
+void drawHistos(TH2F* h2, std::string Title, std::string xTitle, std::string yTitle, Double_t zmax, Double_t ymax);
 
 void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, std::string g2_Title, float xmin, float xmax, float ymin, float ymax, Double_t lineValue_1, Double_t lineValue_2, std::string s, std::string time);
 
@@ -155,9 +156,9 @@ int main (int argc, char** argv) {
     
     //--- draw scaled occupancy graphs
    
-    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.001, 0);
-    drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.0002, 0);
-    drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), 0.0002, 0);
+    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "iphi", "ieta", 0.001, 0);
+    drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
+    drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
 
     //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
     //  - rate = 1.5 kHz
@@ -374,15 +375,15 @@ int main (int argc, char** argv) {
     //---draw time 2D histos
 
     if (PU == "20") {
-      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0.8);
-      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
-      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0.8);
+      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU"+PU+ "_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0);
+      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+ "_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0);
     }
 
     if (PU == "40") {
-      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),80,0.4);
-      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
-      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU" + PU + "_" + bx + "ns_" + multifit).c_str()),50,0);
+      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",70,0.4);
+      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,25);
+      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,25);
     }
     
 
@@ -441,7 +442,7 @@ int main (int argc, char** argv) {
     }
 
     if (PU == "40") {
-      drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
+      drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
 
       drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
@@ -454,21 +455,21 @@ int main (int argc, char** argv) {
   
 } //main
 
-void drawHistos(TH2F* h2, std::string Title, Double_t zmax, Double_t ymax){
+void drawHistos(TH2F* h2, std::string Title, std::string xTitle, std::string yTitle, Double_t zmax, Double_t ymax){
 
   h2 -> SetTitle(Title.c_str());
-  h2 -> GetXaxis() -> SetTitle("iRing");
-  h2 -> GetYaxis() -> SetTitle("time to calibrate (h)");
+  h2 -> GetXaxis() -> SetTitle(xTitle.c_str());
+  h2 -> GetYaxis() -> SetTitle(yTitle.c_str());
   //h2 -> GetZaxis() -> SetTitle("");
     
   h2 -> GetXaxis() -> SetLabelSize(0.04);
-  h2 -> GetXaxis() -> SetTitleSize(0.05);
+  h2 -> GetXaxis() -> SetTitleSize(0.04);
   h2 -> GetXaxis() -> SetTitleOffset(0.9);
   h2 -> GetYaxis() -> SetLabelSize(0.04);
-  h2 -> GetYaxis() -> SetTitleSize(0.05);
-  h2 -> GetYaxis() -> SetTitleOffset(0.9);
+  h2 -> GetYaxis() -> SetTitleSize(0.04);
+  h2 -> GetYaxis() -> SetTitleOffset(1.2);
   h2 -> GetZaxis() -> SetLabelSize(0.04);
-  h2 -> GetZaxis() -> SetTitleSize(0.05);
+  h2 -> GetZaxis() -> SetTitleSize(0.04);
   h2 -> GetZaxis() -> SetTitleOffset(1.2);
   h2-> SetStats(0);
 
@@ -494,7 +495,7 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   gStyle -> SetStatX (.90);
   gStyle -> SetStatY (.90);
   gStyle -> SetStatW (.15);
-  
+
   g1 -> SetTitle(Title.c_str());
   g1 -> GetXaxis() -> SetLabelSize(0.04);
   g1 -> GetYaxis() -> SetLabelSize(0.04);
@@ -533,6 +534,8 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   TCanvas* c1 = new TCanvas("c1","c1");
   c1 -> cd();
   c1->SetLeftMargin(0.15);
+
+  TGaxis::SetMaxDigits(2);
 
   g1 -> Draw("APL");
   g2 -> Draw("PL");
