@@ -12,7 +12,11 @@
 <flags EDM_PLUGIN="1"/>
 <environment>
   <bin
-      name="MakeAlCaPhiSymOccupancyPlot"
-      file="MakeAlCaPhiSymOccupancyPlot.cpp">
+     name="MakeAlCaPhiSymOccupancyPlot"
+     file="MakeAlCaPhiSymOccupancyPlot.cpp">   
+  </bin>
+  <bin
+     name="MakeAlCaPhiSymEnergySpectra"
+     file="MakeAlCaPhiSymEnergySpectra.cpp">   
   </bin>
 </environment>
