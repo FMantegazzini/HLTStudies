@@ -15,8 +15,4 @@
      name="MakeAlCaPhiSymOccupancyPlot"
      file="MakeAlCaPhiSymOccupancyPlot.cpp">   
   </bin>
-  <bin
-     name="MakeAlCaPhiSymEnergySpectra"
-     file="MakeAlCaPhiSymEnergySpectra.cpp">   
-  </bin>
 </environment>
