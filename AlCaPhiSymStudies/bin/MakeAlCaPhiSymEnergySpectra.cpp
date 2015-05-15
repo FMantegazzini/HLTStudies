@@ -93,9 +93,9 @@ int main( int argc, char *argv[] )
   EEP_etSpectrum_histos.resize(EE_rings);
 
   ostringstream t;
-  Int_t nBins = 10000;   
+  Int_t nBins = 1000;   
   Double_t enMin = 0.;
-  Double_t enMax = 10.;
+  Double_t enMax = 8.;
 
   for (int i=0; i<EB_rings; i++) { //EBM eSpectra
     t << "EBM_eSpectrum_" << i+1;
@@ -121,25 +121,25 @@ int main( int argc, char *argv[] )
     t.str("");
   }
 
-  for (int i=0; i<EB_rings; i++) { //EEM eSpectra
+  for (int i=0; i<EE_rings; i++) { //EEM eSpectra
     t << "EEM_eSpectrum_" << i+1;
     EEM_eSpectrum_histos[i]=new TH1F(t.str().c_str(),";E",nBins,enMin,enMax); 
     t.str("");
   }
 
-  for (int i=0; i<EB_rings; i++) { //EEM etSpectra
+  for (int i=0; i<EE_rings; i++) { //EEM etSpectra
     t << "EEM_etSpectrum_" << i+1;
     EEM_etSpectrum_histos[i]=new TH1F(t.str().c_str(),";Et",nBins,enMin,enMax); 
     t.str("");
   }
 
-  for (int i=0; i<EB_rings; i++) { //EEP eSpectra
+  for (int i=0; i<EE_rings; i++) { //EEP eSpectra
     t << "EEP_eSpectrum_" << i+1;
     EEP_eSpectrum_histos[i]=new TH1F(t.str().c_str(),";E",nBins,enMin,enMax); 
     t.str("");
   }
 
-  for (int i=0; i<EB_rings; i++) { //EEP etSpectra
+  for (int i=0; i<EE_rings; i++) { //EEP etSpectra
     t << "EEP_etSpectrum_" << i+1;
     EEP_etSpectrum_histos[i]=new TH1F(t.str().c_str(),";Et",nBins,enMin,enMax); 
     t.str("");
@@ -181,11 +181,12 @@ int main( int argc, char *argv[] )
 	          
 	    float e  = itb->energy();
 	    float et = itb->energy()/cosh(eta);
+	    cout << "EB, ieta = " << ieta << ", et = " << et << endl;
 	          
 	    float ebCut_GeV = ebCut_ADC*0.04;
-	    float et_thr = ebCut_GeV/cosh(eta) + 1.;
+	    //float et_thr = ebCut_GeV/cosh(eta) + 1.;
 	          
-	    if (e > ebCut_GeV && et < et_thr) {
+	    if (e > ebCut_GeV) {
 	      if (ieta < 0) { //EBM
 		EBM_eSpectrum_histos[ieta+85]->Fill(e);
 		EBM_etSpectrum_histos[ieta+85]->Fill(et);
@@ -212,11 +213,13 @@ int main( int argc, char *argv[] )
 	          
 	    float e  = ite->energy();
 	    float et = ite->energy()/cosh(eta);
+
+	    cout << "EE, iz = " << id_crystal.zside() << ", ring = " << iring << ", et = " << et << endl;
 	          
 	    if (id_crystal.zside() > 0) { //EEP
 	      float eepCut_GeV = eeCut_ADC*( 72.92+(3.549)*iring + (0.2262)*iring*iring )/1000.;
-	      float et_thr = eepCut_GeV/cosh(eta) + 1.;
-	      if (e > eepCut_GeV && et < et_thr) {
+	      //float et_thr = eepCut_GeV/cosh(eta) + 1.;
+	      if (e > eepCut_GeV) {
 		EEP_eSpectrum_histos[iring]->Fill(e);
 		EEP_etSpectrum_histos[iring]->Fill(et);
 	      }
@@ -224,9 +227,9 @@ int main( int argc, char *argv[] )
 	    }
 	          
 	    if (id_crystal.zside() < 0) { //EEM
-	      float eemCut_GeV = eeCut_ADC*( 79.29+(4.148)*iring + (0.2442)*iring*iring )/1000.;
+	      //float eemCut_GeV = eeCut_ADC*( 79.29+(4.148)*iring + (0.2442)*iring*iring )/1000.;
 	      float et_thr = eemCut_GeV/cosh(eta) + 1.;
-	      if (e > eemCut_GeV && et < et_thr){
+	      if (e > eemCut_GeV){
 		EEM_eSpectrum_histos[iring]->Fill(e);
 		EEM_etSpectrum_histos[iring]->Fill(et);
 	      }
