@@ -14,7 +14,8 @@ TEndcapRings::TEndcapRings()
         iEndcapRing[ix][iy][iz] = -1;
   
   FILE *fRing;
-  fRing = fopen("./eerings.dat","r");
+  fRing = fopen("./HLTStudies/AlCaPhiSymStudies/src/eerings.dat","r");
+  //fRing = fopen("./eerings.dat","r");
   std::cout << "Inizializing endcap geometry from: eerings.dat" << std::endl;
   int ix,iy,iz,ir;
   while(fscanf(fRing,"(%d,%d,%d) %d \n",&ix,&iy,&iz,&ir) !=EOF )
@@ -22,7 +23,8 @@ TEndcapRings::TEndcapRings()
     if( iz < 0 ) iz = 0; 
     iEndcapRing[ix][iy][iz] = ir;
   }
-  
+
+  std::cout << "eering.dat read correctly" << std::endl; 
   return;
 }
 
