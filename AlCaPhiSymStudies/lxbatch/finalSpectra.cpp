@@ -37,6 +37,8 @@ string uintToString (unsigned int);
 
 string Double_tToString (Double_t);
 
+void DrawSpectra (TFile* file, std::string EBEE, std::string h_name, std::string title);
+
 int main (int argc, char** argv) {
 
   std::string PU;
@@ -128,147 +130,25 @@ int main (int argc, char** argv) {
       cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
     }
     
-    //std::string str = uintToString(ii+1);
-    //TFile *outputFile = new TFile (("spectra_" + str + ".root").c_str(),"RECREATE"); 
-    //std::cout << "New file created: " << "spectra_" << str << ".root" << std::endl; 
-
-    static const int EB_rings = 85;
-    static const int EE_rings = 39;
-
     TFile* f = new TFile(inputFiles.at(ii).c_str());
-    f->cd("makeAlCaPhiSymSpectra");
-  
+
     TH1F* h_events = (TH1F*)f->Get("h_nEvents");
-    
-    ostringstream t;
 
-    //---EB spectra
-    TCanvas* e_EBM = new TCanvas("e_EBM","e_EBM");
-    TCanvas* e_EBP = new TCanvas("e_EBP","e_EBP");
-  
-    TCanvas* et_EBM = new TCanvas("et_EBM","et_EBM");
-    TCanvas* et_EBP = new TCanvas("et_EBP","et_EBP");
+    DrawSpectra(f, std::string("EBM"), std::string("eSpectrum"), std::string("EBM_eSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EBM"), std::string("etSpectrum"), std::string("EBM_etSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EBM"), std::string("calibration"), std::string("EBM_calibSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
 
-    TCanvas* cal_EBM = new TCanvas("cal_EBM","cal_EBM");
-    TCanvas* cal_EBP = new TCanvas("cal_EBP","cal_EBP");
-     
-    for (int i=0; i<EB_rings; i++) {
-     
-      t << "EBM_eSpectrum_" << i+1;
-      TH1F* h_eSpectrum_EBM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
-      t << "EBP_eSpectrum_" << i+1;
-      TH1F* h_eSpectrum_EBP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
+    DrawSpectra(f, std::string("EBP"), std::string("eSpectrum"), std::string("EBP_eSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EBP"), std::string("etSpectrum"), std::string("EBP_etSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EBP"), std::string("calibration"), std::string("EBP_calibSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
 
-      t << "EBM_etSpectrum_" << i+1;
-      TH1F* h_etSpectrum_EBM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
-      t << "EBP_etSpectrum_" << i+1;
-      TH1F* h_etSpectrum_EBP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
+    DrawSpectra(f, std::string("EEM"), std::string("eSpectrum"), std::string("EEM_eSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EEM"), std::string("etSpectrum"), std::string("EEM_etSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EEM"), std::string("calibration"), std::string("EEM_calibSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
 
-      t << "EBM_calibration_" << i+1;
-      TH1F* h_calSpectrum_EBM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
-      t << "EBP_calibration_" << i+1;
-      TH1F* h_calSpectrum_EBP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
-
-      e_EBM -> cd();
-      h_eSpectrum_EBM -> Draw();
-      e_EBP -> cd();
-      h_eSpectrum_EBP -> Draw();
-     
-      et_EBM -> cd();
-      h_etSpectrum_EBM -> Draw();
-      et_EBP -> cd();
-      h_etSpectrum_EBP -> Draw();
-      
-      cal_EBM -> cd();
-      h_calSpectrum_EBM -> Draw();
-      cal_EBP -> cd();
-      h_calSpectrum_EBP -> Draw();
-     
-    }
-    
-    e_EBM -> Print("EBM_eSpectra.png", "png");
-    e_EBM -> Print("EBM_eSpectra.pdf", "pdf"); 
-    et_EBP -> Print("EBP_etSpectra.png", "png");
-    et_EBP -> Print("EBP_etSpectra.pdf", "pdf"); 
-    cal_EBP -> Print("EBP_calibSpectra.png", "png");
-    cal_EBP -> Print("EBP_calibSpectra.pdf", "pdf"); 
-      
-    delete e_EBM;
-    delete e_EBP;
-    delete et_EBM;
-    delete et_EBP;
-    delete cal_EBM;
-    delete cal_EBP;
-
-    //---EE spectra
-    TCanvas* e_EEM = new TCanvas("e_EEM","e_EEM");
-    TCanvas* e_EEP = new TCanvas("e_EEP","e_EEP");
-  
-    TCanvas* et_EEM = new TCanvas("et_EEM","et_EEM");
-    TCanvas* et_EEP = new TCanvas("et_EEP","et_EEP");
-
-    TCanvas* cal_EEM = new TCanvas("cal_EEM","cal_EEM");
-    TCanvas* cal_EEP = new TCanvas("cal_EEP","cal_EEP");
-     
-    for (int i=0; i<EE_rings; i++) {
-     
-      t << "EEM_eSpectrum_" << i+1;
-      TH1F* h_eSpectrum_EEM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
-      t << "EEP_eSpectrum_" << i+1;
-      TH1F* h_eSpectrum_EEP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
-
-      t << "EEM_etSpectrum_" << i+1;
-      TH1F* h_etSpectrum_EEM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
-      t << "EEP_etSpectrum_" << i+1;
-      TH1F* h_etSpectrum_EEP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
-
-      t << "EEM_calibration_" << i+1;
-      TH1F* h_calSpectrum_EEM = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");
-      t << "EEP_calibration_" << i+1;
-      TH1F* h_calSpectrum_EEP = (TH1F*)f->Get(t.str().c_str()); 
-      t.str("");     
-
-      e_EEM -> cd();
-      h_eSpectrum_EEM -> Draw();
-      e_EEP -> cd();
-      h_eSpectrum_EEP -> Draw();
-     
-      et_EEM -> cd();
-      h_etSpectrum_EEM -> Draw();
-      et_EEP -> cd();
-      h_etSpectrum_EEP -> Draw();
-      
-      cal_EEM -> cd();
-      h_calSpectrum_EEM -> Draw();
-      cal_EEP -> cd();
-      h_calSpectrum_EEP -> Draw();
-     
-    }
-   
-    e_EEM -> Print("EEM_eSpectra.png", "png");
-    e_EEM -> Print("EEM_eSpectra.pdf", "pdf"); 
-    et_EEP -> Print("EEP_etSpectra.png", "png");
-    et_EEP -> Print("EEP_etSpectra.pdf", "pdf"); 
-    cal_EEP -> Print("EEP_calibSpectra.png", "png");
-    cal_EEP -> Print("EEP_calibSpectra.pdf", "pdf"); 
-      
-    delete e_EEM;
-    delete e_EEP;
-    delete et_EEM;
-    delete et_EEP;
-    delete cal_EEM;
-    delete cal_EEP;
+    DrawSpectra(f, std::string("EEP"), std::string("eSpectrum"), std::string("EEP_eSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EEP"), std::string("etSpectrum"), std::string("EEP_etSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
+    DrawSpectra(f, std::string("EEP"), std::string("calibration"), std::string("EEP_calibSpectrum_PU" + PU + "_" + bx + "ns_" + multifit));    
 
   } //files list
   
@@ -288,4 +168,33 @@ string Double_tToString (Double_t number) {
   std::ostringstream buff;
   buff<<number;
   return buff.str();   
+}
+
+//function to get the histos from the file and draw them in the same canvas
+void DrawSpectra (TFile* file, std::string EBEE, std::string h_name, std::string title) {
+  
+  ostringstream t;
+
+  int n_rings;
+  if (EBEE == "EBM" || EBEE == "EBP") 
+    n_rings = 85;     
+  if (EBEE == "EEM" || EBEE == "EEP")
+    n_rings = 39;
+    
+  TCanvas* c = new TCanvas("c","c");
+  c->cd();
+
+  for (int i=0; i<n_rings; i++) {
+     
+    t << EBEE << "_" << h_name << "_" << i+1;
+    TH1F* histo = (TH1F*)file->Get(t.str().c_str()); 
+    t.str("");     
+    histo -> Draw(); // <<<--- crash at this line 
+  }
+
+  c -> Print((title + ".png").c_str(), "png");
+  c -> Print((title + ".pdf").c_str(), "pdf"); 
+	
+  delete c;
+
 }
