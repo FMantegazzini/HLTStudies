@@ -200,8 +200,8 @@ while (<LISTOFSamples>)
 	#$command = "cmsMkdir ".$OUTPUTSAVEPath;
 	#print SAMPLEJOBFILE $command."\n";
 
-	#$command = "cp ".$BASEDir."../src/eerings.dat ./";
-	$command = "cp ".$BASEDir."eerings.dat ./";
+	$command = "cp ".$BASEDir."../bin/eerings.dat ./";
+	#$command = "cp ".$BASEDir."eerings.dat ./";
 	print SAMPLEJOBFILE $command."\n";
 
 	#$command = "MakeAlCaPhiSymOccupancyPlot ".$JOBCfgFile ;
