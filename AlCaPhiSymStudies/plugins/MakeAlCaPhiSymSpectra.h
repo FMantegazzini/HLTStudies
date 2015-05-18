@@ -28,6 +28,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "HLTStudies/AlCaPhiSymStudies/interface/TEndcapRings.h"
+
 class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
 {
 
@@ -54,7 +56,7 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
 
   const int nBins = 1000;
   const int EB_rings = 85;
-  const int EE_rings = 38;
+  const int EE_rings = 39;
 
   float enMin;
   float enMax;
@@ -63,7 +65,7 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
 
   int naiveId_;
 
-  //ostringstream t;
+  TEndcapRings* eRings;
 
   // ------------- HISTOGRAMS ------------------------------------
   TH1F* h_nEvents;
