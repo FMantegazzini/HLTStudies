@@ -31,7 +31,7 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('MakeAlCaPhiSymSpectra_output.root')
+    fileName = cms.string('OUTPUT.root')
 )
 
 process.p = cms.Path(
