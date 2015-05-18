@@ -201,7 +201,7 @@ while (<LISTOFSamples>)
 	#print SAMPLEJOBFILE $command."\n";
 
 	#$command = "cp ".$BASEDir."../bin/eerings.dat ./";
-	$command = "cp ".$BASEDir."eerings.dat ./";
+	$command = "cp ".$BASEDir."..src/eerings.dat ./";
 	print SAMPLEJOBFILE $command."\n";
 
 	#$command = "MakeAlCaPhiSymOccupancyPlot ".$JOBCfgFile ;
