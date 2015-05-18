@@ -147,7 +147,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   std::cout << "Event = " << naiveId_ << std::endl;
   
   using namespace edm;
-  
+  /*
   //---LaserCorrections
   edm::ESHandle<EcalLaserDbService> theLaser;
   iSetup.get<EcalLaserDbRecord>().get(theLaser);
@@ -167,9 +167,9 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   std::cout << ">>> Handle ADCToGeV" << std::endl;
 
   const edm::Timestamp& evtTimeStamp = edm::Timestamp(0);
-
+  */
   TEndcapRings *eRings = new TEndcapRings(); 
-  /*
+  
   //---rechitsEB
   edm::Handle<EcalRecHitCollection> recHitsEB;
   ev.getByLabel( recHitCollection_EB_, recHitsEB );
@@ -178,7 +178,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
     std::cerr << "EcalValidation::analyze --> recHitsEB not found" << std::endl; 
   }
   std::cout << ">>> Handle EBRechits" << std::endl;
-  */
+  
   //---rechitsEE
   edm::Handle<EcalRecHitCollection> recHitsEE;
   ev.getByLabel( recHitCollection_EE_, recHitsEE );
@@ -187,7 +187,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
     std::cerr << "EcalValidation::analyze --> recHitsEE not found" << std::endl; 
   }
   std::cout << ">>> Handle EERechit" << std::endl;
-  /*  
+    
   //---EBRechits iteration
   EBRecHitCollection::const_iterator itb;
   std::cout << ">>> start EBRechits iteration " << std::endl;
@@ -197,11 +197,12 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       float ieta = id_crystal.ieta();
       float eta = eRings->GetEtaFromIRing (ieta);
+      std::cout << "ieta = " << ieta << ", eta = " << eta << std::endl;
             
       float e  = itb->energy();
       float et = itb->energy()/cosh(eta);
       std::cout << "e = " << e << ", et = " << et << std::endl;
-      
+      /*    
       float LaserCorrection = theLaser->getLaserCorrection(id_crystal, evtTimeStamp);
       std::cout << "LaserCorrection = " << LaserCorrection << std::endl;
       float InterCalibConst = 1.;
@@ -217,20 +218,20 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       float Calibration = LaserCorrection * InterCalibConst * ADCToGeV_EB;
       std::cout << "Calibration = " << Calibration << std::endl;
-
+      
       if (ieta < 0) { //EBM
 	EBM_eSpectrum_histos[ieta+85]->Fill(e);
 	EBM_etSpectrum_histos[ieta+85]->Fill(et);
-	EBM_calibration_histos[ieta+85]->Fill(Calibration);
+	//EBM_calibration_histos[ieta+85]->Fill(Calibration);
       }
       else if (ieta > 0) { //EBP
 	EBP_eSpectrum_histos[ieta-1]->Fill(e);
 	EBP_etSpectrum_histos[ieta-1]->Fill(et);
-	EBP_calibration_histos[ieta-1]->Fill(Calibration);
+	//EBP_calibration_histos[ieta-1]->Fill(Calibration);
       }
-      std::cout << ">>> histos filled" << std::endl;
+      std::cout << ">>> histos filled" << std::endl;*/
     }
-  */
+  
   std::cout << "EBRechits iteration finished" << std::endl;
 
   //---EERechits iteration
@@ -240,6 +241,15 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
     {
       EEDetId id_crystal(ite->id());
 
+      float iring = eRings->GetEndcapRing( id_crystal.ix(), id_crystal.iy(), id_crystal.zside() );
+      float eta = eRings->GetEtaFromIRing (iring);
+      std::cout << "iring = " << iring << ", eta = " << eta << std::endl;
+      
+      float e  = ite->energy();
+      float et = ite->energy()/cosh(eta);
+      std::cout << "e = " << e << ", et = " << et << std::endl;
+
+      /*
       float LaserCorrection = theLaser->getLaserCorrection(id_crystal, evtTimeStamp);
       
       float InterCalibConst = 1.;
@@ -251,26 +261,22 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   
       float ADCToGeV_EE = agc->getEEValue();
       float Calibration = LaserCorrection * InterCalibConst * ADCToGeV_EE;
-       
-      float iring = eRings->GetEndcapRing( id_crystal.ix(), id_crystal.iy(), id_crystal.zside() );
-      float eta = eRings->GetEtaFromIRing (iring);
-      
-      float e  = ite->energy();
-      float et = ite->energy()/cosh(eta);
-
+      */
+      /*
       if (id_crystal.zside() < 0) { //EEM
 	EEM_eSpectrum_histos[iring]->Fill(e);
 	EEM_etSpectrum_histos[iring]->Fill(et);
-	EEM_calibration_histos[iring]->Fill(Calibration);
+	//EEM_calibration_histos[iring]->Fill(Calibration);
       }
       else if (id_crystal.zside() > 0) { //EEP
 	EEP_eSpectrum_histos[iring]->Fill(e);
 	EEP_etSpectrum_histos[iring]->Fill(et);
-	EEP_calibration_histos[iring]->Fill(Calibration);
+	//EEP_calibration_histos[iring]->Fill(Calibration);
       }
+      */
     }  
   
-  std::cout << "EBRechits iteration finished" << std::endl;
+  std::cout << "EERechits iteration finished" << std::endl;
 
 }
   
