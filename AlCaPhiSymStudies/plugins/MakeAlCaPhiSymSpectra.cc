@@ -50,16 +50,15 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
   recHitCollection_EE_                   = ps.getParameter<edm::InputTag>("recHitCollection_EE");
 
   enMin = 0.;
-  enMax = 8.;
+  enMax = 6.;
   calMin = 0.;
-  calMax = 20;
+  calMax = 1.;
   
   naiveId_ = 0;
 
   edm::Service<TFileService> fs;
 
   h_nEvents = fs->make<TH1F>("h_nEvents","h_nEvents",3,-1,2);
-  std::cout << "h_nEvents created" << std::endl;
 
   EBM_eSpectrum_histos.resize(EB_rings);
   EBP_eSpectrum_histos.resize(EB_rings);
@@ -75,8 +74,6 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
   EBP_calibration_histos.resize(EB_rings);
   EEM_calibration_histos.resize(EE_rings);
   EEP_calibration_histos.resize(EE_rings);
-
-  std::cout << "histos vectors resized" << std::endl;
 
   std::ostringstream t;
   for (int i=0; i<EB_rings; i++) { //EB
@@ -98,7 +95,7 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
     EBP_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EBP_calibration_" << i+1;
-    EBM_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
+    EBP_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
 
   }
@@ -138,6 +135,7 @@ MakeAlCaPhiSymSpectra::~MakeAlCaPhiSymSpectra()
 
 void MakeAlCaPhiSymSpectra::beginJob()
 {
+  eRings = new TEndcapRings();
 }
 
 // ------------ method called to for each event  ------------
@@ -147,13 +145,13 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   std::cout << "Event = " << naiveId_ << std::endl;
   
   using namespace edm;
-  /*
+   
   //---LaserCorrections
   edm::ESHandle<EcalLaserDbService> theLaser;
   iSetup.get<EcalLaserDbRecord>().get(theLaser);
   std::cout << ">>> Handle LaserCorrections" << std::endl;
  
-  //---InterCalibration constant s
+  //---InterCalibration constant
   edm::ESHandle<EcalIntercalibConstantsMC> theIC;
   iSetup.get<EcalIntercalibConstantsMCRcd>().get(theIC) ;
   const EcalIntercalibConstantsMC* ical = theIC.product();
@@ -167,8 +165,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   std::cout << ">>> Handle ADCToGeV" << std::endl;
 
   const edm::Timestamp& evtTimeStamp = edm::Timestamp(0);
-  */
-  TEndcapRings *eRings = new TEndcapRings(); 
   
   //---rechitsEB
   edm::Handle<EcalRecHitCollection> recHitsEB;
@@ -197,39 +193,34 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       float ieta = id_crystal.ieta();
       float eta = eRings->GetEtaFromIRing (ieta);
-      std::cout << "ieta = " << ieta << ", eta = " << eta << std::endl;
             
       float e  = itb->energy();
       float et = itb->energy()/cosh(eta);
-      std::cout << "e = " << e << ", et = " << et << std::endl;
-      /*    
+         
       float LaserCorrection = theLaser->getLaserCorrection(id_crystal, evtTimeStamp);
-      std::cout << "LaserCorrection = " << LaserCorrection << std::endl;
+      
       float InterCalibConst = 1.;
       EcalIntercalibConstantMCMap::const_iterator icalit = icalMap.find(id_crystal);
       if( icalit!=icalMap.end() )
 	{
 	  InterCalibConst = (*icalit);
 	}
-      std::cout << "IC = " << InterCalibConst << std::endl;
-
+      
       float ADCToGeV_EB = agc->getEBValue();
-      std::cout << "ADCToGeV = " << ADCToGeV_EB << std::endl;
-
+      
       float Calibration = LaserCorrection * InterCalibConst * ADCToGeV_EB;
-      std::cout << "Calibration = " << Calibration << std::endl;
+      //std::cout << "Calibration = " << Calibration << std::endl;
       
       if (ieta < 0) { //EBM
 	EBM_eSpectrum_histos[ieta+85]->Fill(e);
 	EBM_etSpectrum_histos[ieta+85]->Fill(et);
-	//EBM_calibration_histos[ieta+85]->Fill(Calibration);
+	EBM_calibration_histos[ieta+85]->Fill(Calibration);
       }
       else if (ieta > 0) { //EBP
 	EBP_eSpectrum_histos[ieta-1]->Fill(e);
 	EBP_etSpectrum_histos[ieta-1]->Fill(et);
-	//EBP_calibration_histos[ieta-1]->Fill(Calibration);
-      }
-      std::cout << ">>> histos filled" << std::endl;*/
+	EBP_calibration_histos[ieta-1]->Fill(Calibration);
+	}
     }
   
   std::cout << "EBRechits iteration finished" << std::endl;
@@ -243,13 +234,10 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       float iring = eRings->GetEndcapRing( id_crystal.ix(), id_crystal.iy(), id_crystal.zside() );
       float eta = eRings->GetEtaFromIRing (iring);
-      std::cout << "iring = " << iring << ", eta = " << eta << std::endl;
       
       float e  = ite->energy();
       float et = ite->energy()/cosh(eta);
-      std::cout << "e = " << e << ", et = " << et << std::endl;
-
-      /*
+      
       float LaserCorrection = theLaser->getLaserCorrection(id_crystal, evtTimeStamp);
       
       float InterCalibConst = 1.;
@@ -261,19 +249,19 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   
       float ADCToGeV_EE = agc->getEEValue();
       float Calibration = LaserCorrection * InterCalibConst * ADCToGeV_EE;
-      */
-      /*
+      //std::cout << "Calibration = " << Calibration << std::endl; 
+           
       if (id_crystal.zside() < 0) { //EEM
 	EEM_eSpectrum_histos[iring]->Fill(e);
 	EEM_etSpectrum_histos[iring]->Fill(et);
-	//EEM_calibration_histos[iring]->Fill(Calibration);
+	EEM_calibration_histos[iring]->Fill(Calibration);
       }
       else if (id_crystal.zside() > 0) { //EEP
 	EEP_eSpectrum_histos[iring]->Fill(e);
 	EEP_etSpectrum_histos[iring]->Fill(et);
-	//EEP_calibration_histos[iring]->Fill(Calibration);
+	EEP_calibration_histos[iring]->Fill(Calibration);
       }
-      */
+      
     }  
   
   std::cout << "EERechits iteration finished" << std::endl;
