@@ -54,21 +54,35 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
   edm::InputTag recHitCollection_EB_;
   edm::InputTag recHitCollection_EE_;
 
-  const int nBins = 1000;
   const int EB_rings = 85;
   const int EE_rings = 39;
 
+  float ebCut_ADC = 13.;
+  float eeCut_ADC = 20.;
+
   float enMin;
-  float enMax;
+  float enMax_EB;
+  float enMax_EE;
   float calMin;
   float calMax;
 
+  int nBins;
   int naiveId_;
 
   TEndcapRings* eRings;
 
+  std::map<int,std::map<int,std::map<int,TH1F*> > > EBmap;
+  std::map<int,std::map<int,std::map<int,TH1F*> > > EEmap;
+ 
   // ------------- HISTOGRAMS ------------------------------------
   TH1F* h_nEvents;
+
+  TH2F* h2_hitOccupancy_EB = new TH2F("h2_hitOccupancy_EB_highCut1","h2_hitOccupancy_EB_highCut1",360,0,360,170,-85,85);
+  TH2F* h2_hitOccupancy_EB = new TH2F("h2_hitOccupancy_EB_highCut2","h2_hitOccupancy_EB_highCut2",360,0,360,170,-85,85);
+  TH2F* h2_hitOccupancy_EEP = new TH2F("h2_hitOccupancy_EEP_highCut1","h2_hitOccupancy_EEP_highCut1",100,1,101,100,1,101);
+  TH2F* h2_hitOccupancy_EEP = new TH2F("h2_hitOccupancy_EEP_highCut2","h2_hitOccupancy_EEP_highCut2",100,1,101,100,1,101);
+  TH2F* h2_hitOccupancy_EEM = new TH2F("h2_hitOccupancy_EEM_highCut1","h2_hitOccupancy_EEM_highCut1",100,1,101,100,1,101);
+  TH2F* h2_hitOccupancy_EEM = new TH2F("h2_hitOccupancy_EEM_highCut2","h2_hitOccupancy_EEM_highCut2",100,1,101,100,1,101);
   
   std::vector<TH1F*> EBM_eSpectrum_histos;
   std::vector<TH1F*> EBP_eSpectrum_histos;
