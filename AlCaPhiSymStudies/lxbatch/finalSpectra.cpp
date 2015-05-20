@@ -37,7 +37,7 @@ string uintToString (unsigned int);
 
 string Double_tToString (Double_t);
 
-void DrawSpectra (TFile* file, std::string EBEE, std::string h_name, std::string title, std::string xTitle, Double_t xMax, Double_t yMax, int rebin);
+void DrawSpectra (TFile* file, Double_t n_events, std::string EBEE, std::string h_name, std::string title, std::string xTitle, Double_t xMax, Double_t yMax);
 
 int main (int argc, char** argv) {
 
@@ -133,24 +133,52 @@ int main (int argc, char** argv) {
     TFile* f = new TFile(inputFiles.at(ii).c_str());
 
     TH1F* h_events = (TH1F*)f->Get("makeAlCaPhiSymSpectra/h_nEvents");
+    Double_t num_events = h_events->GetBinContent(h_events->FindBin(0));
+    cout << "Total number of events = " << num_events << endl;
 
-    DrawSpectra(f, std::string("EBM"),std::string("eSpectrum"),std::string("EBM_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),4,1e6,100);    
-    DrawSpectra(f, std::string("EBM"),std::string("etSpectrum"),std::string("EBM_etSpectrum_PU"+PU+"_"+bx+"ns_"+ multifit),std::string("E_{T}"),4,1e6,100);    
-    DrawSpectra(f, std::string("EBM"),std::string("calibration"),std::string("EBM_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.8,1e6,10);
+    //EBM
+    DrawSpectra(f,num_events,std::string("EBM"),std::string("eSpectrum"),std::string("EBM_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),10,1);
+    if (PU == "40" && bx == "50")  
+      DrawSpectra(f,num_events,std::string("EBM"),std::string("etSpectrum"),std::string("EBM_etSpectrum_PU"+PU+"_"+bx+"ns_"+ multifit),std::string("E_{T}"),10,1);  
+    else  
+      DrawSpectra(f,num_events,std::string("EBM"),std::string("etSpectrum"),std::string("EBM_etSpectrum_PU"+PU+"_"+bx+"ns_"+ multifit),std::string("E_{T}"),10,1); 
+    DrawSpectra(f,num_events,std::string("EBM"),std::string("calibration"),std::string("EBM_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.5,1);
 
-    DrawSpectra(f, std::string("EBP"),std::string("eSpectrum"),std::string("EBP_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),4,1e6,100);    
-    DrawSpectra(f, std::string("EBP"),std::string("etSpectrum"),std::string("EBP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),4,1e6,100);    
-    DrawSpectra(f, std::string("EBP"),std::string("calibration"),std::string("EBP_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.8,1e6,10);
+    //EBP
+    DrawSpectra(f,num_events,std::string("EBP"),std::string("eSpectrum"),std::string("EBP_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),10,1);
+    if (PU == "40" && bx == "50")    
+      DrawSpectra(f,num_events,std::string("EBP"),std::string("etSpectrum"),std::string("EBP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),10,1); 
+    else   
+      DrawSpectra(f,num_events,std::string("EBP"),std::string("etSpectrum"),std::string("EBP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),10,1); 
+    DrawSpectra(f,num_events,std::string("EBP"),std::string("calibration"),std::string("EBP_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.5,1);
 
-    DrawSpectra(f, std::string("EEM"),std::string("eSpectrum"),std::string("EEM_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),60,1e6,100);    
-    DrawSpectra(f, std::string("EEM"),std::string("etSpectrum"),std::string("EEM_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),60,1e6,100);    
-    DrawSpectra(f, std::string("EEM"),std::string("calibration"),std::string("EEM_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.8,1e6,10);
+    //EEM
+    if ((PU == "20" && bx == "50" && multifit == "no_multifit") || (PU == "40" && bx == "50")) {
+      DrawSpectra(f,num_events,std::string("EEM"),std::string("eSpectrum"),std::string("EEM_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),30,1);    
+      DrawSpectra(f,num_events,std::string("EEM"),std::string("etSpectrum"),std::string("EEM_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),30,1);    
+    }
+    else  {
+      DrawSpectra(f,num_events,std::string("EEM"),std::string("eSpectrum"),std::string("EEM_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),30,1);    
+      DrawSpectra(f,num_events,std::string("EEM"),std::string("etSpectrum"),std::string("EEM_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),30,1);    
+    }
+    DrawSpectra(f,num_events,std::string("EEM"),std::string("calibration"),std::string("EEM_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.5,1);
 
-    DrawSpectra(f, std::string("EEP"),std::string("eSpectrum"),std::string("EEP_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),60,1e6,100);    
-    DrawSpectra(f, std::string("EEP"),std::string("etSpectrum"),std::string("EEP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),60,1e6,100);    
-    DrawSpectra(f, std::string("EEP"),std::string("calibration"),std::string("EEP_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.8,1e6,10);
+    //EEP
+    if (PU == "40" && bx == "50" && multifit == "no_multifit") {
+      DrawSpectra(f,num_events,std::string("EEP"),std::string("eSpectrum"),std::string("EEP_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),30,1);    
+      DrawSpectra(f,num_events,std::string("EEP"),std::string("etSpectrum"),std::string("EEP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),30,1);    
+    }
+    else  {
+      DrawSpectra(f,num_events,std::string("EEP"),std::string("eSpectrum"),std::string("EEP_eSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E"),30,1);    
+      DrawSpectra(f,num_events,std::string("EEP"),std::string("etSpectrum"),std::string("EEP_etSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("E_{T}"),30,1);    
+    }
+    DrawSpectra(f,num_events,std::string("EEP"),std::string("calibration"),std::string("EEP_calibSpectrum_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Calibration"),0.5,1);
 
-  } //files list
+    //Singles crystals energy spectra (EB ring 15, EEM ring 16)
+    DrawSpectra(f,num_events,std::string("EB"),std::string("ieta_15_iphi"),std::string("EB_ring15_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Energy"),10,1);
+    DrawSpectra(f,num_events,std::string("EB"),std::string("iring_16"),std::string("EEM_ring16_PU"+PU+"_"+bx+"ns_"+multifit),std::string("Energy"),10,1);
+
+ } //files list
   
 } //main
 
@@ -171,22 +199,29 @@ string Double_tToString (Double_t number) {
 }
 
 //function to get the histos from the file and draw them in the same canvas
-void DrawSpectra (TFile* file, std::string EBEE, std::string h_name, std::string title, std::string xTitle, Double_t xMax, Double_t yMax, int rebin) {
+void DrawSpectra (TFile* file, Double_t n_events, std::string EBEE, std::string h_name, std::string title, std::string xTitle, Double_t xMax, Double_t yMax) {
   
   ostringstream t;
 
-  int n_rings;
-  if (EBEE == "EBM" || EBEE == "EBP") 
-    n_rings = 85;     
-  if (EBEE == "EEM" || EBEE == "EEP")
-    n_rings = 39;
+  int n;
+  if (h_name == "ieta_15_iphi")
+    n = 361;
+  else if (h_name == "iring_16")
+    n = 221;
+  else if (h_name == "eSpectrum" || h_name == "etSpectrum" || h_name == "calibration") {
+    if (EBEE == "EBM" || EBEE == "EBP") 
+      n = 85;     
+    if (EBEE == "EEM" || EBEE == "EEP")
+      n = 39;
+  }
     
   TCanvas* c = new TCanvas("c","c");
-  c->cd();
 
-  for (int i=0; i<n_rings; i++) {
-     
-    t << "makeAlCaPhiSymSpectra/" << EBEE << "_" << h_name << "_" << i+1;
+  for (int i=0; i<n; i++) {
+    if (h_name == "ieta_15_iphi")  
+      t << "makeAlCaPhiSymSpectra/" << EBEE << "_" << h_name << "_" << i;
+    else
+      t << "makeAlCaPhiSymSpectra/" << EBEE << "_" << h_name << "_" << i+1;
     TH1F* histo = (TH1F*)file->Get(t.str().c_str()); 
     t.str("");
 
@@ -196,21 +231,27 @@ void DrawSpectra (TFile* file, std::string EBEE, std::string h_name, std::string
       histo -> GetXaxis() -> SetLabelSize(0.04);
       histo -> GetXaxis() -> SetTitleSize(0.04);
       histo -> GetXaxis() -> SetTitleOffset(1.);
-      histo -> GetXaxis() -> SetRangeUser(0,xMax);     
-      histo -> GetYaxis() -> SetRangeUser(0,yMax);     
+      histo -> Scale(1./n_events);
+      Int_t rebin = (histo -> GetNbinsX())/1000;
+      histo -> Rebin (rebin);
+      histo -> SetAxisRange(0.,xMax, "X");
+      histo -> SetAxisRange(0.,yMax, "Y");
       histo -> SetStats(0);
       histo -> SetLineColor(kBlue);
       histo -> SetLineWidth(1.);
-      histo -> Rebin (rebin);
+      c->cd();
       histo -> Draw();
     }
 
     else if (i > 0) {
-      histo -> GetXaxis() -> SetRangeUser(0,xMax);     
-      histo -> GetYaxis() -> SetRangeUser(0,yMax);     
+      histo -> Scale(1./n_events);
+      Int_t rebin = (histo -> GetNbinsX())/1000;
+      histo -> Rebin (rebin); 
+      histo -> SetAxisRange(0.,xMax, "X");
+      histo -> SetAxisRange(0.,yMax, "Y");
       histo -> SetLineColor(kBlue);
       histo -> SetLineWidth(1.);
-      histo -> Rebin (rebin);
+      c->cd();
       histo -> Draw("same");
     }
  
