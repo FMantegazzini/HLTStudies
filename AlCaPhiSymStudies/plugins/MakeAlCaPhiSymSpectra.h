@@ -61,8 +61,7 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
   float eeCut_ADC = 20.;
 
   float enMin;
-  float enMax_EB;
-  float enMax_EE;
+  float enMax;
   float calMin;
   float calMax;
 
@@ -77,12 +76,12 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
   // ------------- HISTOGRAMS ------------------------------------
   TH1F* h_nEvents;
 
-  TH2F* h2_hitOccupancy_EB = new TH2F("h2_hitOccupancy_EB_highCut1","h2_hitOccupancy_EB_highCut1",360,0,360,170,-85,85);
-  TH2F* h2_hitOccupancy_EB = new TH2F("h2_hitOccupancy_EB_highCut2","h2_hitOccupancy_EB_highCut2",360,0,360,170,-85,85);
-  TH2F* h2_hitOccupancy_EEP = new TH2F("h2_hitOccupancy_EEP_highCut1","h2_hitOccupancy_EEP_highCut1",100,1,101,100,1,101);
-  TH2F* h2_hitOccupancy_EEP = new TH2F("h2_hitOccupancy_EEP_highCut2","h2_hitOccupancy_EEP_highCut2",100,1,101,100,1,101);
-  TH2F* h2_hitOccupancy_EEM = new TH2F("h2_hitOccupancy_EEM_highCut1","h2_hitOccupancy_EEM_highCut1",100,1,101,100,1,101);
-  TH2F* h2_hitOccupancy_EEM = new TH2F("h2_hitOccupancy_EEM_highCut2","h2_hitOccupancy_EEM_highCut2",100,1,101,100,1,101);
+  TH2F* h2_hitOccupancy_EB_highCut1;
+  TH2F* h2_hitOccupancy_EB_highCut2;
+  TH2F* h2_hitOccupancy_EEM_highCut1;
+  TH2F* h2_hitOccupancy_EEM_highCut2;
+  TH2F* h2_hitOccupancy_EEP_highCut1;
+  TH2F* h2_hitOccupancy_EEP_highCut2;
   
   std::vector<TH1F*> EBM_eSpectrum_histos;
   std::vector<TH1F*> EBP_eSpectrum_histos;
