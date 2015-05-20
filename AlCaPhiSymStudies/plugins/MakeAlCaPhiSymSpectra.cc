@@ -47,6 +47,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <map>
 
 MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
 
@@ -65,6 +66,13 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
 
   h_nEvents = fs->make<TH1F>("h_nEvents","h_nEvents",3,-1,2);
 
+  h2_hitOccupancy_EB_highCut1 = fs->make<TH2F>("h2_hitOccupancy_EB_highCut1","h2_hitOccupancy_EB_highCut1",360,0,360,170,-85,85);
+  h2_hitOccupancy_EB_highCut2 = fs->make<TH2F>("h2_hitOccupancy_EB_highCut2","h2_hitOccupancy_EB_highCut2",360,0,360,170,-85,85);
+  h2_hitOccupancy_EEM_highCut1 = fs->make<TH2F>("h2_hitOccupancy_EEM_highCut1","h2_hitOccupancy_EEM_highCut1",100,1,101,100,1,101);
+  h2_hitOccupancy_EEM_highCut2 = fs->make<TH2F>("h2_hitOccupancy_EEM_highCut2","h2_hitOccupancy_EEM_highCut2",100,1,101,100,1,101);
+  h2_hitOccupancy_EEP_highCut1 = fs->make<TH2F>("h2_hitOccupancy_EEP_highCut1","h2_hitOccupancy_EEP_highCut1",100,1,101,100,1,101);
+  h2_hitOccupancy_EEP_highCut2 = fs->make<TH2F>("h2_hitOccupancy_EEP_highCut2","h2_hitOccupancy_EEP_highCut2",100,1,101,100,1,101);
+
   EBM_eSpectrum_histos.resize(EB_rings);
   EBP_eSpectrum_histos.resize(EB_rings);
   EEM_eSpectrum_histos.resize(EE_rings);
@@ -81,23 +89,24 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
   EEP_calibration_histos.resize(EE_rings);
 
   std::ostringstream t;
+  std::ostringstream title;
   for (int i=0; i<EB_rings; i++) { //EB
 
     t << "EBM_eSpectrum_" << i+1;
-    EBM_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EB); 
+    EBM_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EBM_etSpectrum_" << i+1;
-    EBM_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EB); 
+    EBM_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EBM_calibration_" << i+1;
     EBM_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,calMin,calMax); 
     t.str("");
 
     t << "EBP_eSpectrum_" << i+1;
-    EBP_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EB); 
+    EBP_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EBP_etSpectrum_" << i+1;
-    EBP_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EB); 
+    EBP_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EBP_calibration_" << i+1;
     EBP_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,calMin,calMax); 
@@ -107,36 +116,36 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
 
   for (int i=0; i<EE_rings; i++) { //EE
     t << "EEM_eSpectrum_" << i+1;
-    EEM_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EE); 
+    EEM_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EEM_etSpectrum_" << i+1;
-    EEM_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EE); 
+    EEM_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EEM_calibration_" << i+1;
     EEM_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,calMin,calMax); 
     t.str("");
 
     t << "EEP_eSpectrum_" << i+1;
-    EEP_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EE); 
+    EEP_eSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EEP_etSpectrum_" << i+1;
-    EEP_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax_EE); 
+    EEP_etSpectrum_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,enMin,enMax); 
     t.str("");
     t << "EEP_calibration_" << i+1;
     EEP_calibration_histos[i] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,calMin,calMax); 
     t.str("");
 
   }
- 
+   
   //crystals energy spectra for EBring = 15
-  for (int iphi=0; i<360; i++) { 
+  for (int iphi=0; iphi<361; iphi++) { 
     int ieta = 15;
     int iz = 0;
     t << "EB_ieta_" << ieta << "_iphi_" << iphi;
     EBmap[ieta][iphi][iz] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,0.,10.);
     t.str("");
   }
-
+  
   //crystals energy spectra for EEMring = 16
   eRings = new TEndcapRings();
   std::vector<int> ix_vector;
@@ -144,22 +153,27 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
 
   for (int ix=1; ix<101; ix++) { 
     for (int iy=1; iy<101; iy++) {
-      float iring = eRings->GetEndcapRing(ix,iy,-1);
-      if iring==16 {
+      int iring = eRings->GetEndcapRing(ix,iy,-1);
+      if (iring==16) {
 	  ix_vector.push_back(ix);
 	  iy_vector.push_back(iy);
 	}
     }
   }
   
-  for (int ii=0; ii<ix_vector.size(); ii++) {
+  std::cout << "VECTOR:" << std::endl;
+  int i = 0;
+  for (unsigned int ii=0; ii<ix_vector.size(); ii++) {
     int iz = -1;
-    t << "EEM_ix_" << ix_vector.at(ii) << "_iy_" << iy_vector.at(ii);
-    EEmap[ix][iy][iz] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,0.,80.);
+    t << "EEM_ring_16_" << i+1;
+    title << "EEM_ix_" << ix_vector.at(ii) << "_iy_" << iy_vector.at(ii);
+    EEmap[ix_vector.at(ii)][iy_vector.at(ii)][iz] = fs->make<TH1F>(t.str().c_str(),title.str().c_str(),nBins,0.,80.);
     t.str("");
+    title.str("");
+    i++;
   }
- 
-  std::cout << "histos created" << std::endl; 
+   
+  //std::cout << "histos created" << std::endl; 
   
 }
 
@@ -185,15 +199,13 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   //---LaserCorrections
   edm::ESHandle<EcalLaserDbService> theLaser;
   iSetup.get<EcalLaserDbRecord>().get(theLaser);
-  std::cout << ">>> Handle LaserCorrections" << std::endl;
  
   //---InterCalibration constant
   edm::ESHandle<EcalIntercalibConstantsMC> theIC;
   iSetup.get<EcalIntercalibConstantsMCRcd>().get(theIC) ;
   const EcalIntercalibConstantsMC* ical = theIC.product();
   const EcalIntercalibConstantMCMap &icalMap = ical->getMap();
-  std::cout << ">>> Handle IC" << std::endl;
-
+ 
   /*---ADCToGeV constants
   edm::ESHandle<EcalADCToGeVConstant> theADCToGeV;
   iSetup.get<EcalADCToGeVConstantRcd>().get(theADCToGeV);
@@ -206,7 +218,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   //---Channel Status
   edm::ESHandle<EcalChannelStatus> csHandle;
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
-  // const EcalChannelStatus* theEcalChStatus = csHandle.product();
   const EcalChannelStatus& channelStatus = *csHandle; 
   
   //---rechitsEB
@@ -216,7 +227,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   if ( ! recHitsEB.isValid() ) {
     std::cerr << "EcalValidation::analyze --> recHitsEB not found" << std::endl; 
   }
-  std::cout << ">>> Handle EBRechits" << std::endl;
   
   //---rechitsEE
   edm::Handle<EcalRecHitCollection> recHitsEE;
@@ -225,7 +235,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   if ( ! recHitsEE.isValid() ) {
     std::cerr << "EcalValidation::analyze --> recHitsEE not found" << std::endl; 
   }
-  std::cout << ">>> Handle EERechit" << std::endl;
     
   //---EBRechits iteration
   EBRecHitCollection::const_iterator itb;
@@ -236,13 +245,11 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       uint16_t statusCode = 0;
       statusCode = channelStatus[itb->id().rawId()].getStatusCode();
-      std::cout << "ChStatus = " << statusCode << std::endl;
-
       if (statusCode != 0) continue;
 
       int ieta = id_crystal.ieta();
       int iphi = id_crystal.iphi();
-      int iz = id_crystal.iz(); //??
+      int iz = 0;
       float eta = eRings->GetEtaFromIRing (ieta);
             
       float e  = itb->energy();
@@ -270,7 +277,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
       
       //float ADCToGeV_EB = agc->getEBValue();      
       float Calibration = LaserCorrection * InterCalibConst;
-      //std::cout << "Calibration = " << Calibration << std::endl;
       
       //spectra
       if (ieta < 0) { //EBM
@@ -283,11 +289,11 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 	EBP_etSpectrum_histos[ieta-1]->Fill(et);
 	EBP_calibration_histos[ieta-1]->Fill(Calibration);
 	}
-
+      
       //crystals energy distributions for ring ieta = 15
       if (ieta == 15) { 
 	EBmap[ieta][iphi][iz] -> Fill(e);
-      }
+	}
     }
   
   std::cout << "EBRechits iteration finished" << std::endl;
@@ -301,16 +307,14 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       uint16_t statusCode = 0;
       statusCode = channelStatus[ite->id().rawId()].getStatusCode();
-      std::cout << "ChStatus = " << statusCode << std::endl;
-
       if (statusCode != 0) continue;
 
       int ix = id_crystal.ix();
       int iy = id_crystal.iy();
-      int iz =  id_crystal.zside());
-      float iring = eRings->GetEndcapRing( id_crystal.ix(), id_crystal.iy(), id_crystal.zside() );
+      int iz =  id_crystal.zside();
+      int iring = eRings->GetEndcapRing(ix,iy,iz);
       float eta = eRings->GetEtaFromIRing (iring);
-      
+
       float e  = ite->energy();
       float et = ite->energy()/cosh(eta);
 
@@ -347,7 +351,6 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   
       //float ADCToGeV_EE = agc->getEEValue();
       float Calibration = LaserCorrection * InterCalibConst;
-      //std::cout << "Calibration = " << Calibration << std::endl; 
            
       //spectra
       if (id_crystal.zside() < 0) { //EEM
@@ -361,10 +364,9 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 	EEP_calibration_histos[iring]->Fill(Calibration);
       }
 
-      //crystals energy distributions for iring = 16
-      if (iring == 16) {
+      if (iring == 16 && iz == -1) {
 	EEmap[ix][iy][iz] -> Fill(e);
-      }
+	}
       
     }  
   
