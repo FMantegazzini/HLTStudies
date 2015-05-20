@@ -128,6 +128,37 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
 
   }
  
+  //crystals energy spectra for EBring = 15
+  for (int iphi=0; i<360; i++) { 
+    int ieta = 15;
+    int iz = 0;
+    t << "EB_ieta_" << ieta << "_iphi_" << iphi;
+    EBmap[ieta][iphi][iz] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,0.,10.);
+    t.str("");
+  }
+
+  //crystals energy spectra for EEMring = 16
+  eRings = new TEndcapRings();
+  std::vector<int> ix_vector;
+  std::vector<int> iy_vector; 
+
+  for (int ix=1; ix<101; ix++) { 
+    for (int iy=1; iy<101; iy++) {
+      float iring = eRings->GetEndcapRing(ix,iy,-1);
+      if iring==16 {
+	  ix_vector.push_back(ix);
+	  iy_vector.push_back(iy);
+	}
+    }
+  }
+  
+  for (int ii=0; ii<ix_vector.size(); ii++) {
+    int iz = -1;
+    t << "EEM_ix_" << ix_vector.at(ii) << "_iy_" << iy_vector.at(ii);
+    EEmap[ix][iy][iz] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,0.,80.);
+    t.str("");
+  }
+ 
   std::cout << "histos created" << std::endl; 
   
 }
@@ -254,10 +285,8 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 	}
 
       //crystals energy distributions for ring ieta = 15
-      if (ieta == 15) {
-	TH1F *h = new TH1F("h","h",100000,0,100); 
-	EBmap[ieta][iphi][iz] = h;
-	h->Fill(e);
+      if (ieta == 15) { 
+	EBmap[ieta][iphi][iz] -> Fill(e);
       }
     }
   
@@ -334,9 +363,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       //crystals energy distributions for iring = 16
       if (iring == 16) {
-	TH1F *h = new TH1F("h","h",100000,0,100); 
-	EBmap[ix][iy][iz] = h;
-	h->Fill(e);
+	EEmap[ix][iy][iz] -> Fill(e);
       }
       
     }  
