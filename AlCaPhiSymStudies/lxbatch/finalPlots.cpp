@@ -3,7 +3,15 @@ C++ code to draw occupancy plots.
 This program read outputTotal.root, that is the union of the .root files created by bin/MakeAlCaPhiSymOccupancyPlot.cpp
 
 To compile: c++ -o finalPlots `root-config --cflags --glibs` finalPlots.cpp TEndcapRings.cc
-To run: ./finalPlots.cpp scenariosList.txt scenariosParameters.txt
+To run: ./finalPlots.cpp scenariosList.txt
+
+OUTPUT:
+- TH2F occupancy plots
+- computation of the necessary occupancy to calibrate in 10 hours assuming: rate = 1.5 kHz, statistical precision = 0.1% (---> 1000 hits)
+- computation of mean hits per event and of lower occupancy for EB, EEM, EEP
+- TH2F time vs ring distributions
+- TGraph mean occupancy vs ring
+- TGraph lowest occupancy vs ring
 */
 
 using namespace std;
@@ -140,11 +148,18 @@ int main (int argc, char** argv) {
 
     TFile* f = new TFile(inputFiles.at(ii).c_str());
   
-    TH1F* h_events = (TH1F*)f->Get("h_nEvents");
+    //if you are reading .root with subdir makeAlCaPhiSymSpectra
+    TH1F* h_events = (TH1F*)f->Get("makeAlCaPhiSymSpectra/h_nEvents");
+    TH2F* h2_EB = (TH2F*)f->Get("makeAlCaPhiSymSpectra/h2_hitOccupancy_EB_highCut1"); //360 x 170 bins
+    TH2F* h2_EEM = (TH2F*)f->Get("makeAlCaPhiSymSpectra/h2_hitOccupancy_EEM_highCut1"); //100 x 100 bins
+    TH2F* h2_EEP = (TH2F*)f->Get("makeAlCaPhiSymSpectra/h2_hitOccupancy_EEP_highCut1"); //100 x 100 bins*/
+
+    //if you are reading .root without subdir
+    /*TH1F* h_events = (TH1F*)f->Get("h_nEvents");
     TH2F* h2_EB = (TH2F*)f->Get("h2_hitOccupancy_EB"); //360 x 170 bins
     TH2F* h2_EEM = (TH2F*)f->Get("h2_hitOccupancy_EEM"); //100 x 100 bins
-    TH2F* h2_EEP = (TH2F*)f->Get("h2_hitOccupancy_EEP"); //100 x 100 bins
-
+    TH2F* h2_EEP = (TH2F*)f->Get("h2_hitOccupancy_EEP"); //100 x 100 bins */
+   
     Double_t num_events = h_events->GetBinContent(h_events->FindBin(0));
     cout << "Total number of events = " << num_events << endl;
 
@@ -156,7 +171,7 @@ int main (int argc, char** argv) {
     
     //--- draw scaled occupancy graphs
    
-    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "iphi", "ieta", 0.001, 0);
+    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "iphi", "ieta", 0.0015, 0);
     drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
     drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
 
@@ -172,15 +187,15 @@ int main (int argc, char** argv) {
     Double_t necessary_occupancy = hits/(time_hours * rate * 1000 * 3600);
     cout << "Necessary occupancy to calibrate in 10 hours = " << necessary_occupancy << endl;
 
-    //---computation of mean hits per event and of lower occupancy for EB, EEM, EEP
+    //---computation of mean hits per event and of lowest occupancy for EB, EEM, EEP
     //---fill TH2 histos with time to calibrate distributions for every ring
  
     Double_t EB_mean = 0.;
     Double_t EEM_mean= 0.;
     Double_t EEP_mean = 0.;
-    Double_t EB_lower = 10.;
-    Double_t EEM_lower = 10.;
-    Double_t EEP_lower = 10.;
+    Double_t EB_lowest = 10.;
+    Double_t EEM_lowest = 10.;
+    Double_t EEP_lowest = 10.;
     
     int EB_channels = 0;
     for (int i=1; i <= h2_EB->GetNbinsX(); i++) {
@@ -190,8 +205,8 @@ int main (int argc, char** argv) {
 	  EB_mean = EB_mean + h2_EB->GetBinContent(h2_EB->FindBin(i,j));
 	}
       
-	if (h2_EB->GetBinContent(h2_EB->FindBin(i,j)) < EB_lower && h2_EB->GetBinContent(h2_EB->FindBin(i,j)) != 0) {  //Find lower occupancy
-	  EB_lower = h2_EB->GetBinContent(h2_EB->FindBin(i,j));
+	if (h2_EB->GetBinContent(h2_EB->FindBin(i,j)) < EB_lowest && h2_EB->GetBinContent(h2_EB->FindBin(i,j)) != 0) {  //Find lowest occupancy
+	  EB_lowest = h2_EB->GetBinContent(h2_EB->FindBin(i,j));
 	}
       }
     }
@@ -200,13 +215,13 @@ int main (int argc, char** argv) {
     int EEM_channels = 0;
     for (int i=1; i <= h2_EEM->GetNbinsX(); i++) {
       for (int j=1; j <= h2_EEM->GetNbinsY(); j++) {
-	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) > 0) { //find lower occupancy
+	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) > 0) { //find lowest occupancy
 	  EEM_channels = EEM_channels + 1;
 	  EEM_mean = EEM_mean + h2_EEM->GetBinContent(h2_EEM->FindBin(i,j));
 	}
 
-	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) < EEM_lower && h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) != 0) //find lower occupancy
-	  EEM_lower = h2_EEM->GetBinContent(h2_EEM->FindBin(i,j));
+	if (h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) < EEM_lowest && h2_EEM->GetBinContent(h2_EEM->FindBin(i,j)) != 0) //find lowest occupancy
+	  EEM_lowest = h2_EEM->GetBinContent(h2_EEM->FindBin(i,j));
       }
     }
     EEM_mean = EEM_mean/EEM_channels;
@@ -219,43 +234,43 @@ int main (int argc, char** argv) {
 	  EEP_mean = EEP_mean + h2_EEP->GetBinContent(h2_EEP->FindBin(i,j));
 	}
 
-	if (h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) < EEP_lower && h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) != 0) //find lower occupancy
-	  EEP_lower = h2_EEP->GetBinContent(h2_EEP->FindBin(i,j));
+	if (h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) < EEP_lowest && h2_EEP->GetBinContent(h2_EEP->FindBin(i,j)) != 0) //find lowest occupancy
+	  EEP_lowest = h2_EEP->GetBinContent(h2_EEP->FindBin(i,j));
       }
     }
     EEP_mean = EEP_mean/EEP_channels;
 
     Double_t EE_mean = (EEM_mean + EEP_mean)/2.;
-    Double_t EE_lower = 0.;
-    if (EEM_lower < EEP_lower)
-      EE_lower = EEM_lower;
-    else if (EEM_lower >= EEP_lower)
-      EE_lower = EEP_lower;
+    Double_t EE_lowest = 0.;
+    if (EEM_lowest < EEP_lowest)
+      EE_lowest = EEM_lowest;
+    else if (EEM_lowest >= EEP_lowest)
+      EE_lowest = EEP_lowest;
 
     cout << "EB mean occupancy = " << EB_mean << endl;
     cout << "EEM mean occupancy = " << EEM_mean << endl;
     cout << "EEP mean occupancy = " << EEP_mean << endl;
     cout << "EE mean occupancy = " << EE_mean << endl;
   
-    cout << "EB lower occupancy = " << EB_lower  << endl;
-    cout << "EEM lower occupancy = " << EEM_lower << endl;
-    cout << "EEP lower occupancy = " << EEP_lower << endl;
-    cout << "EE lower occupancy = " << EE_lower << endl;
+    cout << "EB lowest occupancy = " << EB_lowest  << endl;
+    cout << "EEM lowest occupancy = " << EEM_lowest << endl;
+    cout << "EEP lowest occupancy = " << EEP_lowest << endl;
+    cout << "EE lowest occupancy = " << EE_lowest << endl;
 
-    //--- computation of the necessary time to calibrate with EB(EE)_mean and EB(EE)_lower occupancy assuming;
+    //--- computation of the necessary time to calibrate with EB(EE)_mean and EB(EE)_lowest occupancy assuming;
     //  - rate = 1.5 kHz
     //  - statistical precision = 0.1%
     //  - necessary number of hits to reach this precision = 1000
 
     Double_t EB_mean_time = hits/(EB_mean * rate * 1000 * 3600);
     Double_t EE_mean_time = hits/(EE_mean * rate * 1000 * 3600);
-    Double_t EB_lower_time = hits/(EB_lower * rate * 1000 * 3600);
-    Double_t EE_lower_time = hits/(EE_lower * rate * 1000 * 3600);
+    Double_t EB_lowest_time = hits/(EB_lowest * rate * 1000 * 3600);
+    Double_t EE_lowest_time = hits/(EE_lowest * rate * 1000 * 3600);
 
     cout << "Necessary time to calibrate with EB mean occupancy = " << EB_mean_time << " hours" << endl;
     cout << "Necessary time to calibrate with EE mean occupancy = " << EE_mean_time << " hours" << endl;
-    cout << "Necessary time to calibrate with EB lower occupancy = " << EB_lower_time << " hours" << endl;
-    cout << "Necessary time to calibrate with EE lower occupancy = " << EE_lower_time << " hours" << endl;
+    cout << "Necessary time to calibrate with EB lowest occupancy = " << EB_lowest_time << " hours" << endl;
+    cout << "Necessary time to calibrate with EE lowest occupancy = " << EE_lowest_time << " hours" << endl;
   
     //--- create and fill histos with occupancy for every ring
 
@@ -268,7 +283,7 @@ int main (int argc, char** argv) {
     Double_t occupancyMin = 0.;
     Double_t occupancyMax = 0.02;
     Double_t meanOccupancy = 0.;
-    Double_t lowerOccupancy = 0.;
+    Double_t lowestOccupancy = 0.;
 
     std::vector<TH1F*> EBM_occupancy_histos;
     std::vector<TH1F*> EBP_occupancy_histos;
@@ -383,48 +398,48 @@ int main (int argc, char** argv) {
     if (PU == "40") {
       drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",70,0.4);
       drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,25);
-      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,25);
+      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,15);
     }
     
 
-    //graphs for mean and lower occupancy
+    //graphs for mean and lowest occupancy
 
     TGraph *EBM_meanOccupancy = new TGraph();
     TGraph *EBP_meanOccupancy = new TGraph(); 
     TGraph *EEM_meanOccupancy = new TGraph(); 
     TGraph *EEP_meanOccupancy = new TGraph(); 
 
-    TGraph *EBM_lowerOccupancy = new TGraph();
-    TGraph *EBP_lowerOccupancy = new TGraph(); 
-    TGraph *EEM_lowerOccupancy = new TGraph(); 
-    TGraph *EEP_lowerOccupancy = new TGraph(); 
+    TGraph *EBM_lowestOccupancy = new TGraph();
+    TGraph *EBP_lowestOccupancy = new TGraph(); 
+    TGraph *EEM_lowestOccupancy = new TGraph(); 
+    TGraph *EEP_lowestOccupancy = new TGraph(); 
         
     for(int i = 0; i < EB_rings; i++) { //EB-
       meanOccupancy = EBM_occupancy_histos[i]->GetMean();      
       EBM_meanOccupancy->SetPoint(i,85-i,meanOccupancy);
-      lowerOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
-      EBM_lowerOccupancy->SetPoint(i,85-i,lowerOccupancy);
+      lowestOccupancy = (EBM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
+      EBM_lowestOccupancy->SetPoint(i,85-i,lowestOccupancy);
     }
 
     for(int i = 0; i < EB_rings; i++) { //EB+
       meanOccupancy = EBP_occupancy_histos[i]->GetMean();      
       EBP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
-      EBP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      lowestOccupancy = (EBP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
+      EBP_lowestOccupancy->SetPoint(i,i+1,lowestOccupancy);
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE-
       meanOccupancy = EEM_occupancy_histos[i]->GetMean();      
       EEM_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
-      EEM_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      lowestOccupancy = (EEM_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
+      EEM_lowestOccupancy->SetPoint(i,i+1,lowestOccupancy);
     }
 
     for(int i = 0; i < EE_rings; i++) { //EE+
       meanOccupancy = EEP_occupancy_histos[i]->GetMean();      
       EEP_meanOccupancy->SetPoint(i,i+1,meanOccupancy);
-      lowerOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
-      EEP_lowerOccupancy->SetPoint(i,i+1,lowerOccupancy);
+      lowestOccupancy = (EEP_occupancy_histos[i]->FindFirstBinAbove(0.)) * (occupancyMax - occupancyMin) / nBins;
+      EEP_lowestOccupancy->SetPoint(i,i+1,lowestOccupancy);
     }
 
     outputFile->Close();
@@ -436,9 +451,9 @@ int main (int argc, char** argv) {
 
       drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
-      drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_lower, std::string("lower"), std::string(Double_tToString(EB_lower_time)));
+      drawGraphs(EBM_lowestOccupancy,EBP_lowestOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_lowest, std::string("lowest"), std::string(Double_tToString(EB_lowest_time)));
 
-      drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.00025, necessary_occupancy,EE_lower, std::string("lower"), std::string(Double_tToString(EE_lower_time)));
+      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.00018, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
     }
 
     if (PU == "40") {
@@ -446,9 +461,9 @@ int main (int argc, char** argv) {
 
       drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
-      drawGraphs(EBM_lowerOccupancy,EBP_lowerOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lower, std::string("lower"), std::string(Double_tToString(EB_lower_time)));
+      drawGraphs(EBM_lowestOccupancy,EBP_lowestOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lowest, std::string("lowest"), std::string(Double_tToString(EB_lowest_time)));
 
-      drawGraphs(EEM_lowerOccupancy,EEP_lowerOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lower, std::string("lower"), std::string(Double_tToString(EE_lower_time)));
+      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
     }
 
   } //files list
@@ -566,8 +581,8 @@ void drawGraphs(TGraph* g1,TGraph* g2, std::string Title, std::string g1_Title, 
   text_2->SetTextSize(0.034);
   if (s=="mean")
     text_2->DrawLatex(0.22,0.71,("#splitline{red line: total mean occupancy}{#Rightarrow time to calibrate = " + time + " h}").c_str());
-  if (s=="lower")
-    text_2->DrawLatex(0.22,0.71,("#splitline{red line: lower occupancy}{#Rightarrow time to calibrate = " + time + " h}").c_str());
+  if (s=="lowest")
+    text_2->DrawLatex(0.22,0.71,("#splitline{red line: lowest occupancy}{#Rightarrow time to calibrate = " + time + " h}").c_str());
   text_2->Draw("same");
   
   c1 -> Print((s + "OccupancyVSring_" + Title + ".png").c_str(),"png");
