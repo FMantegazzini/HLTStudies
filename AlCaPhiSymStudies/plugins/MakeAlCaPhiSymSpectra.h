@@ -71,7 +71,8 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
   TEndcapRings* eRings;
 
   std::map<int,std::map<int,std::map<int,TH1F*> > > EBmap;
-  std::map<int,std::map<int,std::map<int,TH1F*> > > EEmap;
+  std::map<int,std::map<int,std::map<int,TH1F*> > > EEmap_energy;
+  std::map<int,std::map<int,std::map<int,TH1F*> > > EEmap_calib;
  
   // ------------- HISTOGRAMS ------------------------------------
   TH1F* h_nEvents;
@@ -82,6 +83,20 @@ class MakeAlCaPhiSymSpectra :  public edm::EDAnalyzer
   TH2F* h2_hitOccupancy_EEM_highCut2;
   TH2F* h2_hitOccupancy_EEP_highCut1;
   TH2F* h2_hitOccupancy_EEP_highCut2;
+
+  TH2F* h2_calib_EB;
+  TH2F* h2_LC_EB;
+  TH2F* h2_IC_EB;
+  TH2F* h2_calib_EEM;
+  TH2F* h2_LC_EEM;
+  TH2F* h2_IC_EEM;
+  TH2F* h2_calib_EEP;
+  TH2F* h2_LC_EEP;
+  TH2F* h2_IC_EEP;
+
+  TH1F* EEM_ix66_iy26_eSpectrum;
+  TH1F* EEM_ix54_iy25_eSpectrum;
+  TH1F* EEM_ix100_iy57_eSpectrum;
   
   std::vector<TH1F*> EBM_eSpectrum_histos;
   std::vector<TH1F*> EBP_eSpectrum_histos;
