@@ -73,6 +73,22 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
   h2_hitOccupancy_EEP_highCut1 = fs->make<TH2F>("h2_hitOccupancy_EEP_highCut1","h2_hitOccupancy_EEP_highCut1",100,1,101,100,1,101);
   h2_hitOccupancy_EEP_highCut2 = fs->make<TH2F>("h2_hitOccupancy_EEP_highCut2","h2_hitOccupancy_EEP_highCut2",100,1,101,100,1,101);
 
+  h2_calib_EB = fs->make<TH2F>("h2_calib_EB","calibration_EB",360,0,360,170,-85,85);
+  h2_calib_EEM = fs->make<TH2F>("h2_calib_EEM","calibration_EEM",100,1,101,100,1,101);
+  h2_calib_EEP = fs->make<TH2F>("h2_calib_EEP","calibration_EEP",100,1,101,100,1,101);
+
+  h2_LC_EB = fs->make<TH2F>("h2_LC_EB","LC_EB",360,0,360,170,-85,85);
+  h2_LC_EEM = fs->make<TH2F>("h2_LC_EEM","LC_EEM",100,1,101,100,1,101);
+  h2_LC_EEP = fs->make<TH2F>("h2_LC_EEP","LC_EEP",100,1,101,100,1,101);
+
+  h2_IC_EB = fs->make<TH2F>("h2_IC_EB","IC_EB",360,0,360,170,-85,85);
+  h2_IC_EEM = fs->make<TH2F>("h2_IC_EEM","IC_EEM",100,1,101,100,1,101);
+  h2_IC_EEP = fs->make<TH2F>("h2_IC_EEP","IC_EEP",100,1,101,100,1,101);
+
+  EEM_ix66_iy26_eSpectrum = fs->make<TH1F>("EEM_ix66_iy26_eSpectrum","EEM_ix66_iy26",1000,0.,15.);
+  EEM_ix54_iy25_eSpectrum = fs->make<TH1F>("EEM_ix54_iy25_eSpectrum","EEM_ix54_iy25",1000,0.,15.);
+  EEM_ix100_iy57_eSpectrum = fs->make<TH1F>("EEM_ix100_iy57_eSpectrum","EEM_ix100_iy57",1000,0.,15.);
+
   EBM_eSpectrum_histos.resize(EB_rings);
   EBP_eSpectrum_histos.resize(EB_rings);
   EEM_eSpectrum_histos.resize(EE_rings);
@@ -144,32 +160,39 @@ MakeAlCaPhiSymSpectra::MakeAlCaPhiSymSpectra(const edm::ParameterSet& ps){
     t << "EB_ieta_" << ieta << "_iphi_" << iphi;
     EBmap[ieta][iphi][iz] = fs->make<TH1F>(t.str().c_str(),t.str().c_str(),nBins,0.,10.);
     t.str("");
-  }
+  }  
   
-  //crystals energy spectra for EEMring = 16
+  //crystals energy spectra and calibration spectra for EEM ring 23
   eRings = new TEndcapRings();
-  std::vector<int> ix_vector;
-  std::vector<int> iy_vector; 
+  std::vector<int> ix_vector_r23;
+  std::vector<int> iy_vector_r23; 
 
   for (int ix=1; ix<101; ix++) { 
     for (int iy=1; iy<101; iy++) {
       int iring = eRings->GetEndcapRing(ix,iy,-1);
-      if (iring==16) {
-	  ix_vector.push_back(ix);
-	  iy_vector.push_back(iy);
-	}
+      if (iring==23) {
+	ix_vector_r23.push_back(ix);
+	iy_vector_r23.push_back(iy);
+      }
     }
   }
   
-  std::cout << "VECTOR:" << std::endl;
   int i = 0;
-  for (unsigned int ii=0; ii<ix_vector.size(); ii++) {
+  for (unsigned int ii=0; ii<ix_vector_r23.size(); ii++) {
     int iz = -1;
-    t << "EEM_ring_16_" << i+1;
-    title << "EEM_ix_" << ix_vector.at(ii) << "_iy_" << iy_vector.at(ii);
-    EEmap[ix_vector.at(ii)][iy_vector.at(ii)][iz] = fs->make<TH1F>(t.str().c_str(),title.str().c_str(),nBins,0.,80.);
+ 
+    t << "EEM_energy_ring_23_" << i+1; //calibration spectra
+    title << "EEM_ring23_ix_" << ix_vector_r23.at(ii) << "_iy_" << iy_vector_r23.at(ii);
+    EEmap_energy[ix_vector_r23.at(ii)][iy_vector_r23.at(ii)][iz] = fs->make<TH1F>(t.str().c_str(),title.str().c_str(),nBins,0.,80.);
     t.str("");
     title.str("");
+
+    t << "EEM_calib_ring_23_" << i+1; //calibration spectra
+    title << "EEM_ring23_ix_" << ix_vector_r23.at(ii) << "_iy_" << iy_vector_r23.at(ii);
+    EEmap_calib[ix_vector_r23.at(ii)][iy_vector_r23.at(ii)][iz] = fs->make<TH1F>(t.str().c_str(),title.str().c_str(),nBins,0.,80.);
+    t.str("");
+    title.str("");
+
     i++;
   }
    
@@ -243,14 +266,16 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
     {
       EBDetId id_crystal(itb->id());
 
-      uint16_t statusCode = 0;
-      statusCode = channelStatus[itb->id().rawId()].getStatusCode();
-      if (statusCode != 0) continue;
-
       int ieta = id_crystal.ieta();
       int iphi = id_crystal.iphi();
       int iz = 0;
       float eta = eRings->GetEtaFromIRing (ieta);
+
+      uint16_t statusCode = 0;
+      statusCode = channelStatus[itb->id().rawId()].getStatusCode();
+      if (statusCode != 0)
+	std::cout << "BAD CHANNEL STATUS: EB ieta = " << ieta << ", iphi = " << iphi << " --> ChStatus = " << statusCode << std::endl;
+      if (statusCode != 0) continue;
             
       float e  = itb->energy();
       float et = itb->energy()/cosh(eta);
@@ -273,10 +298,20 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
       if( icalit!=icalMap.end() )
 	{
 	  InterCalibConst = (*icalit);
-	}
-      
+	}     
+ 
       //float ADCToGeV_EB = agc->getEBValue();      
       float Calibration = LaserCorrection * InterCalibConst;
+
+      //calibration TH2F
+      if ( h2_LC_EB->GetBinContent(h2_LC_EB->FindBin(id_crystal.iphi(),id_crystal.ieta())) == 0 )
+	h2_LC_EB->SetBinContent(h2_LC_EB->FindBin(id_crystal.iphi(),id_crystal.ieta()),LaserCorrection);
+
+      if ( h2_IC_EB->GetBinContent(h2_IC_EB->FindBin(id_crystal.iphi(),id_crystal.ieta())) == 0 )
+     	h2_IC_EB->SetBinContent(h2_IC_EB->FindBin(id_crystal.iphi(),id_crystal.ieta()),InterCalibConst);
+
+      if ( h2_calib_EB->GetBinContent(h2_calib_EB->FindBin(id_crystal.iphi(),id_crystal.ieta())) == 0 )
+     	h2_calib_EB->SetBinContent(h2_calib_EB->FindBin(id_crystal.iphi(),id_crystal.ieta()),Calibration);
       
       //spectra
       if (ieta < 0) { //EBM
@@ -293,7 +328,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
       //crystals energy distributions for ring ieta = 15
       if (ieta == 15) { 
 	EBmap[ieta][iphi][iz] -> Fill(e);
-	}
+      }
     }
   
   std::cout << "EBRechits iteration finished" << std::endl;
@@ -304,17 +339,19 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   for (ite = theEndcapEcalRecHits->begin(); ite != theEndcapEcalRecHits->end(); ++ite)
     {
       EEDetId id_crystal(ite->id());
-
-      uint16_t statusCode = 0;
-      statusCode = channelStatus[ite->id().rawId()].getStatusCode();
-      if (statusCode != 0) continue;
-
+      
       int ix = id_crystal.ix();
       int iy = id_crystal.iy();
       int iz =  id_crystal.zside();
       int iring = eRings->GetEndcapRing(ix,iy,iz);
       float eta = eRings->GetEtaFromIRing (iring);
 
+      uint16_t statusCode = 0;
+      statusCode = channelStatus[ite->id().rawId()].getStatusCode();
+      if (statusCode != 0)
+	std::cout << "BAD CHANNEL STATUS: EE ix = " << ix << ", iy = " << iy << ", iz = " << iz << " --> ChStatus = " << statusCode << std::endl;
+      if (statusCode != 0) continue;
+     
       float e  = ite->energy();
       float et = ite->energy()/cosh(eta);
 
@@ -341,7 +378,7 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 
       //calibration
       float LaserCorrection = theLaser->getLaserCorrection(id_crystal, evtTimeStamp);
-      
+ 
       float InterCalibConst = 1.;
       EcalIntercalibConstantMCMap::const_iterator icalit = icalMap.find(id_crystal);
       if( icalit!=icalMap.end() )
@@ -351,7 +388,33 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
   
       //float ADCToGeV_EE = agc->getEEValue();
       float Calibration = LaserCorrection * InterCalibConst;
-           
+
+      //calibration TH2F
+     
+      if (id_crystal.zside() < 0) { //EEM
+	  
+	  if ( h2_LC_EEM->GetBinContent(h2_LC_EEM->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_LC_EEM->SetBinContent(h2_LC_EEM->FindBin(id_crystal.ix(),id_crystal.iy()),LaserCorrection);
+
+	  if ( h2_IC_EEM->GetBinContent(h2_IC_EEM->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_IC_EEM->SetBinContent(h2_IC_EEM->FindBin(id_crystal.ix(),id_crystal.iy()),InterCalibConst);
+
+	  if ( h2_calib_EEM->GetBinContent(h2_calib_EEM->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_calib_EEM->SetBinContent(h2_calib_EEM->FindBin(id_crystal.ix(),id_crystal.iy()),Calibration);
+	}
+
+      if (id_crystal.zside() > 0) { //EEP
+
+	  if ( h2_LC_EEP->GetBinContent(h2_LC_EEP->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_LC_EEP->SetBinContent(h2_LC_EEP->FindBin(id_crystal.ix(),id_crystal.iy()),LaserCorrection);
+	 
+	  if ( h2_IC_EEP->GetBinContent(h2_IC_EEP->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_IC_EEP->SetBinContent(h2_IC_EEP->FindBin(id_crystal.ix(),id_crystal.iy()),InterCalibConst);
+
+	  if ( h2_calib_EEP->GetBinContent(h2_calib_EEP->FindBin(id_crystal.ix(),id_crystal.iy())) == 0 )
+	    h2_calib_EEP->SetBinContent(h2_calib_EEP->FindBin(id_crystal.ix(),id_crystal.iy()),Calibration);
+	}
+	            
       //spectra
       if (id_crystal.zside() < 0) { //EEM
 	EEM_eSpectrum_histos[iring]->Fill(e);
@@ -364,9 +427,31 @@ void MakeAlCaPhiSymSpectra::analyze(const edm::Event& ev, const edm::EventSetup&
 	EEP_calibration_histos[iring]->Fill(Calibration);
       }
 
-      if (iring == 16 && iz == -1) {
-	EEmap[ix][iy][iz] -> Fill(e);
+      //crystals energy distributions for ring = 23
+      if (iring == 23 && iz == -1) {
+	EEmap_energy[ix][iy][iz] -> Fill(e);
 	}
+
+      //crystals calibration distributions for ring = 23
+      if (iring == 23 && iz == -1) {
+	EEmap_calib[ix][iy][iz] -> Fill(Calibration);
+      }
+
+      //crystals energy distributions for some EEM crystals
+      if (id_crystal.ix() == 66 && id_crystal.iy()== 26 && id_crystal.zside() < 0) //time = 62.529
+	EEM_ix66_iy26_eSpectrum -> Fill (e);
+      if (id_crystal.ix() == 54 && id_crystal.iy()== 25 && id_crystal.zside() < 0) //time = 31.2645
+	EEM_ix54_iy25_eSpectrum -> Fill (e);
+      if (id_crystal.ix() == 100 && id_crystal.iy()== 57 && id_crystal.zside() < 0) //time = 1.35933
+	EEM_ix100_iy57_eSpectrum -> Fill (e);
+
+      //print calibration values for some crystals (time to calibrated > 60 hours)
+      if (id_crystal.ix() == 66 && id_crystal.iy()== 26 && id_crystal.zside() < 0)
+	std::cout << "*** EEM ix = 66, iy = 26 --> IC = " << InterCalibConst << ", LC = " << LaserCorrection << ", calibration = " << Calibration << std::endl;
+      if (id_crystal.ix() == 60 && id_crystal.iy()== 24 && id_crystal.zside() < 0)
+	std::cout << "*** EEM ix = 60, iy = 24 --> IC = " << InterCalibConst << ", LC = " << LaserCorrection << ", calibration = " << Calibration << std::endl;
+      if (id_crystal.ix() == 59 && id_crystal.iy()== 25 && id_crystal.zside() < 0)
+	std::cout << "*** EEM ix = 59, iy = 25 --> IC = " << InterCalibConst << ", LC = " << LaserCorrection << ", calibration = " << Calibration << std::endl;
       
     }  
   
