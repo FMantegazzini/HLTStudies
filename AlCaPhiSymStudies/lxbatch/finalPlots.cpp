@@ -3,7 +3,7 @@ C++ code to draw occupancy plots.
 This program read outputTotal.root, that is the union of the .root files created by bin/MakeAlCaPhiSymOccupancyPlot.cpp
 
 To compile: c++ -o finalPlots `root-config --cflags --glibs` finalPlots.cpp TEndcapRings.cc
-To run: ./finalPlots.cpp scenariosList.txt
+To run: ./finalPlots scenariosList.txt
 
 OUTPUT:
 - TH2F occupancy plots
@@ -78,8 +78,7 @@ int main (int argc, char** argv) {
   for (unsigned int ii = 0; ii < inputFiles.size(); ii++) { //loop over the files list
     
     std::cout << std::endl << ">>>> Reading inputFile: " << inputFiles.at(ii) << std::endl;
-
-    /*
+    /*   
     cout << "PU?" << endl;
     cin >> PU;
     cout << "bx?" << endl;
@@ -142,6 +141,7 @@ int main (int argc, char** argv) {
       cout << "PU = " << PU << "; bx = " << bx << "; " << multifit << endl;
     }
     
+
     std::string str = uintToString(ii+1);
     TFile *outputFile = new TFile (("occupancy_rings_" + str + ".root").c_str(),"RECREATE"); 
     std::cout << "New file created: " << "occupancy_rings_" << str << ".root" << std::endl; 
@@ -167,13 +167,12 @@ int main (int argc, char** argv) {
     h2_EEM->Scale(1./num_events);
     h2_EEP->Scale(1./num_events);
     cout << "Scaling for " << 1./num_events << endl;
-    
-    
+        
     //--- draw scaled occupancy graphs
    
-    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "iphi", "ieta", 0.0015, 0);
-    drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
-    drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.0002, 0);
+    drawHistos(h2_EB, std::string(("EB_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "iphi", "ieta", 0.001, 0);
+    drawHistos(h2_EEM, std::string(("EEM_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.001, 0);
+    drawHistos(h2_EEP, std::string(("EEP_PU" + PU + "_" + bx + "ns_" + multifit).c_str()), "ix", "iy", 0.001, 0);
 
     //--- computation of the necessary occupancy to calibrate in 10 hours assuming:
     //  - rate = 1.5 kHz
@@ -273,7 +272,6 @@ int main (int argc, char** argv) {
     cout << "Necessary time to calibrate with EE lowest occupancy = " << EE_lowest_time << " hours" << endl;
   
     //--- create and fill histos with occupancy for every ring
-
     static const int EB_rings = 85;
     static const int EE_rings = 39;
 
@@ -321,23 +319,30 @@ int main (int argc, char** argv) {
       t.str("");
     }
 
-    //--- create and fill histos for with time to calibrate distributions for every ring
-    
-    TH2F* h2_EB_time = new TH2F("h2_EB_time","h2_EB_time",170,-85,85,100,0.,2.);
-    TH2F* h2_EEM_time = new TH2F("h2_EEM_time","h2_EEM_time",39,1,40,100,0.,40.);
-    TH2F* h2_EEP_time = new TH2F("h2_EEP_time","h2_EEP_time",39,1,40,100,0.,40.);
+    //--- create histos for with time to calibrate distributions for every ring    
+    TH2F* h2_EB_time_rings = new TH2F("h2_EB_time_rings","h2_EB_time_rings",170,-85,85,100,0.,2.);
+    TH2F* h2_EEM_time_rings = new TH2F("h2_EEM_time_rings","h2_EEM_time_rings",39,1,40,200,0.,30.);
+    TH2F* h2_EEP_time_rings = new TH2F("h2_EEP_time_rings","h2_EEP_time_rings",39,1,40,200,0.,30.);
 
     Double_t EB_time = 0.;
     Double_t EEM_time = 0.;
     Double_t EEP_time = 0.;
+
+    //---create time maps
+    TH2F* h2_EB_timeMap = new TH2F("h2_EB_timeMap","h2_EB_timeMap",360,0,360,170,-85,85);
+    TH2F* h2_EEM_timeMap = new TH2F("h2_EEM_timeMap","h2_EEM_timeMap",100,1,101,100,1,101);
+    TH2F* h2_EEP_timeMap = new TH2F("h2_EEP_timeMap","h2_EEP_timeMap",100,1,101,100,1,101);
   
-    //fill histos
+    //fill rings histos, TH2F time vs ring, TH2F time maps
     for (int iphi=0; iphi<361; iphi++) { //EB-
       for (int ieta=-85; ieta<0; ieta++) {
 	if ( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) != 0 ) {
 	  EBM_occupancy_histos[ieta+85]->Fill( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) ); 
 	  EB_time = hits/( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta) ) * rate * 1000 * 3600 );
-	  h2_EB_time->Fill(ieta,EB_time);
+	  h2_EB_time_rings->Fill(ieta,EB_time);
+	  h2_EB_timeMap->SetBinContent(h2_EB_timeMap->FindBin(iphi,ieta),EB_time);
+	  if (EB_time > 10)
+	    std::cout << "---EBM iphi = " << iphi << ", ieta = " << ieta << " ---> time = " << EB_time << std::endl;
 	}
       }
     }
@@ -347,7 +352,10 @@ int main (int argc, char** argv) {
 	if ( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) != 0 ) {
 	  EBP_occupancy_histos[ieta-1]->Fill( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta)) ); 
 	  EB_time = hits/( h2_EB->GetBinContent(h2_EB->FindBin(iphi,ieta) ) * rate * 1000 * 3600 );
-	  h2_EB_time->Fill(ieta,EB_time);
+	  h2_EB_time_rings->Fill(ieta,EB_time);
+	  h2_EB_timeMap->SetBinContent(h2_EB_timeMap->FindBin(iphi,ieta),EB_time);
+	  if (EB_time > 10)
+	    std::cout << "---EBP iphi = " << iphi << ", ieta = " << ieta << " ---> time = " << EB_time << std::endl;
 	}
       }
     }
@@ -358,7 +366,10 @@ int main (int argc, char** argv) {
 	if ( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) != 0 ) {
 	  EEM_occupancy_histos[iring]->Fill( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) );
 	  EEM_time = hits/( h2_EEM->GetBinContent(h2_EEM->FindBin(ix,iy)) * rate * 1000 * 3600 );
-	  h2_EEM_time->Fill(iring,EEM_time);
+	  h2_EEM_time_rings->Fill(iring,EEM_time);
+	  h2_EEM_timeMap->SetBinContent(h2_EEM_timeMap->FindBin(ix,iy),EEM_time);
+	  if (EEM_time > 10)
+	    std::cout << "---EEM ix = " << ix << ", iy = " << iy << ", iring = " << iring << " ---> time = " << EEM_time << std::endl;
 	} 
       }
     }
@@ -369,12 +380,19 @@ int main (int argc, char** argv) {
 	if ( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) != 0 ) {
 	  EEP_occupancy_histos[iring]->Fill( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) ); 
 	  EEP_time = hits/( h2_EEP->GetBinContent(h2_EEP->FindBin(ix,iy)) * rate * 1000 * 3600 );
-	  h2_EEP_time->Fill(iring,EEP_time);
+	  h2_EEP_time_rings->Fill(iring,EEP_time);
+	  h2_EEP_timeMap->SetBinContent(h2_EEP_timeMap->FindBin(ix,iy),EEP_time);
+	  if (EEP_time > 10)
+	    std::cout << "---EEP ix = " << ix << ", iy = " << iy << ", iring = " << iring << " ---> time = " << EEP_time << std::endl;
+	  if (EEP_time > 5 && EEP_time < 10)
+	    std::cout << "---EEP ix = " << ix << ", iy = " << iy << ", iring = " << iring << " ---> time = " << EEP_time << std::endl;
+	  if (EEP_time > 0.5 && EEP_time < 5 && iring == 1)
+	    std::cout << "---EEP ix = " << ix << ", iy = " << iy << ", iring = " << iring << " ---> time = " << EEP_time << std::endl;
 	}
       }
     }
 
-    //---write occupancy 2D histos
+    //---write ring occupancy histos
     outputFile->cd();
 
     for(int i=0;i<EB_rings;i++){
@@ -387,21 +405,25 @@ int main (int argc, char** argv) {
       EEP_occupancy_histos[i]->Write();
     }
 
-    //---draw time 2D histos
+    //---draw time TH2F time distributions
 
     if (PU == "20") {
-      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0.8);
-      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU"+PU+ "_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0);
-      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+ "_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",60,0);
+      drawHistos(h2_EB_time_rings,std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",140,0.8 );
+      drawHistos(h2_EEM_time_rings,std::string(("EEM_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",150,10.);
+      drawHistos(h2_EEP_time_rings,std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",150,10.);
     }
 
     if (PU == "40") {
-      drawHistos(h2_EB_time, std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",70,0.4);
-      drawHistos(h2_EEM_time, std::string(("EEM_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,25);
-      drawHistos(h2_EEP_time, std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",50,15);
+      drawHistos(h2_EB_time_rings,std::string(("EB_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",200,0.4);
+      drawHistos(h2_EEM_time_rings,std::string(("EEM_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",200,4.);
+      drawHistos(h2_EEP_time_rings,std::string(("EEP_TimeDistribution_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iRing","time to calibrate at 0.1% precision level (h)",200,4.);
     }
-    
 
+    //draw time maps
+    drawHistos(h2_EB_timeMap,std::string(("EB_TimeMap_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"iphi","ieta",0.6,0);
+    drawHistos(h2_EEM_timeMap,std::string(("EEM_TimeMap_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"ix","iy",4,0);
+    drawHistos(h2_EEP_timeMap,std::string(("EEP_TimeMap_PU"+PU+"_"+bx+"ns_"+multifit).c_str()),"ix","iy",4,0);
+   
     //graphs for mean and lowest occupancy
 
     TGraph *EBM_meanOccupancy = new TGraph();
@@ -449,21 +471,21 @@ int main (int argc, char** argv) {
     if (PU == "20") {
       drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
 
-      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
+      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0014, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
       drawGraphs(EBM_lowestOccupancy,EBP_lowestOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0014, necessary_occupancy, EB_lowest, std::string("lowest"), std::string(Double_tToString(EB_lowest_time)));
 
-      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.00018, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
+      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0014, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
     }
 
     if (PU == "40") {
       drawGraphs(EBM_meanOccupancy,EBP_meanOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy, EB_mean, std::string("mean"), std::string(Double_tToString(EB_mean_time))); 
 
-      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0008, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
+      drawGraphs(EEM_meanOccupancy,EEP_meanOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.004, necessary_occupancy, EE_mean, std::string("mean"), std::string(Double_tToString(EE_mean_time)));
 
-      drawGraphs(EBM_lowestOccupancy,EBP_lowestOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.0025, necessary_occupancy, EB_lowest, std::string("lowest"), std::string(Double_tToString(EB_lowest_time)));
+      drawGraphs(EBM_lowestOccupancy,EBP_lowestOccupancy,std::string("EB_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EBM"),std::string("EBP"),0,87,0,0.004, necessary_occupancy, EB_lowest, std::string("lowest"), std::string(Double_tToString(EB_lowest_time)));
 
-      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.0004, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
+      drawGraphs(EEM_lowestOccupancy,EEP_lowestOccupancy,std::string("EE_PU" + PU + "_" + bx + "ns_" + multifit),std::string("EEM"),std::string("EEP"),0,40,0,0.004, necessary_occupancy,EE_lowest, std::string("lowest"), std::string(Double_tToString(EE_lowest_time)));
     }
 
   } //files list
@@ -488,11 +510,15 @@ void drawHistos(TH2F* h2, std::string Title, std::string xTitle, std::string yTi
   h2 -> GetZaxis() -> SetTitleOffset(1.2);
   h2-> SetStats(0);
 
-  if (zmax != 0)
-    h2 -> GetZaxis() -> SetRangeUser(0,zmax);
-
-  if (ymax != 0)
-    h2 -> GetYaxis() -> SetRangeUser(0,ymax);
+  if (zmax != 0) {
+    //h2 -> GetZaxis() -> SetRangeUser(0,zmax);
+    h2 -> SetAxisRange(0.,zmax, "Z");
+  }
+ 
+  if (ymax != 0) {
+    //h2 -> GetYaxis() -> SetRangeUser(0,ymax);
+    h2 -> SetAxisRange(0.,ymax, "Y");
+  }
 
   TCanvas* c = new TCanvas("c","c");
   c->SetRightMargin(0.2);
